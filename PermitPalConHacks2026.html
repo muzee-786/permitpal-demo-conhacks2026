@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>PermitPal | Canadian Compliance Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+    <!-- Leaflet JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+        :root {
+            --bg-canvas: #f8f9fa;
+            --bg-card: #ffffff;
+            --bg-alt: #f1f5f9;
+            --ink-primary: #0f172a;
+            --ink-secondary: #475569;
+            --ink-ghost: #94a3b8;
+            --brand-primary: #e11d48;
+            --brand-dark: #be123c;
+            --brand-glow: rgba(225, 29, 72, 0.08);
+            --status-success: #10b981;
+            --status-success-soft: #ecfdf5;
+            --status-warning: #f59e0b;
+            --status-warning-soft: #fffbeb;
+            --status-error: #ef4444;
+            --status-error-soft: #fef2f2;
+            --status-info: #3b82f6;
+            --status-info-soft: #eff6ff;
+            --border-light: #e2e8f0;
+            --border-med: #cbd5e1;
+            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            --shadow-xl: 0 35px 60px -15px rgba(0,0,0,0.15);
+            --font-main: 'Manrope', sans-serif;
+            --font-serif: 'Lora', serif;
+            --font-mono: 'DM Mono', monospace;
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 32px;
+            --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-snap: all 0.2s ease-out;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; font-size: 16px; }
+        body { font-family: var(--font-main); background: var(--bg-canvas); color: var(--ink-primary); line-height: 1.65; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        a { text-decoration: none; }
+
+        /* LEGAL DISCLAIMER BANNER */
+        .legal-disclaimer-banner {
+            background: #1e293b; color: #e2e8f0; padding: 10px 24px; font-size: 12px;
+            font-family: var(--font-mono); line-height: 1.6; text-align: center; border-bottom: 2px solid var(--brand-primary);
+            position: fixed; top: 0; width: 100%; z-index: 6000; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .legal-disclaimer-banner strong { color: #f87171; font-weight: 800; }
+        .legal-disclaimer-banner .dismiss-btn {
+            background: none; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); border-radius: 4px;
+            padding: 2px 8px; font-size: 11px; cursor: pointer; font-family: var(--font-mono); margin-left: 12px;
+        }
+        .legal-disclaimer-banner .dismiss-btn:hover { border-color: rgba(255,255,255,0.5); color: white; }
+
+        /* HEADER */
+        .site-header {
+            height: 88px; background: rgba(255,255,255,0.88); backdrop-filter: blur(25px);
+            border-bottom: 1px solid var(--border-light); display: flex; align-items: center;
+            justify-content: space-between; padding: 0 64px; position: fixed; width: 100%;
+            top: 44px; z-index: 5000; transition: var(--transition-snap);
+        }
+        .site-header.scrolled { height: 72px; box-shadow: var(--shadow-md); }
+        .brand-block { display: flex; align-items: center; gap: 12px; text-decoration: none; cursor: pointer; }
+        .brand-icon { width: 32px; height: 32px; background: var(--brand-primary); border-radius: 8px; rotate: 45deg; flex-shrink: 0; }
+        .brand-name { font-family: var(--font-serif); font-size: 24px; font-weight: 800; color: var(--ink-primary); letter-spacing: -0.5px; }
+        .brand-name span { color: var(--brand-primary); }
+        .nav-menu { display: flex; gap: 40px; list-style: none; }
+        .nav-link { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--ink-secondary); cursor: pointer; transition: var(--transition-snap); }
+        .nav-link:hover { color: var(--brand-primary); }
+        .header-cta-group { display: flex; gap: 16px; }
+
+        /* HERO */
+        .hero-section {
+            padding: 260px 20px 120px; text-align: center;
+            background: radial-gradient(circle at 0% 0%, rgba(225,29,72,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(59,130,246,0.05) 0%, transparent 50%);
+        }
+        .hero-badge { background: var(--status-info-soft); color: var(--status-info); padding: 8px 20px; border-radius: 99px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px; display: inline-block; }
+        .hero-title { font-family: var(--font-serif); font-size: clamp(48px,7vw,84px); line-height: 1.05; letter-spacing: -3px; max-width: 1000px; margin: 0 auto 32px; font-weight: 700; }
+        .hero-title em { font-style: italic; color: var(--brand-primary); }
+        .hero-sub { font-size: 21px; color: var(--ink-secondary); max-width: 720px; margin: 0 auto 60px; font-weight: 500; }
+        .omni-search-container { max-width: 960px; margin: 0 auto; position: relative; z-index: 10; }
+        .omni-search-bar { background: var(--bg-card); border: 1px solid var(--border-light); padding: 12px; border-radius: var(--radius-xl); display: flex; align-items: center; box-shadow: var(--shadow-xl); transition: var(--transition-smooth); }
+        .omni-search-bar:focus-within { transform: translateY(-8px) scale(1.01); border-color: var(--brand-primary); box-shadow: 0 45px 80px -20px rgba(225,29,72,0.2); }
+        .search-field { flex: 1; border: none; outline: none; padding: 24px 36px; font-size: 22px; font-family: inherit; color: var(--ink-primary); font-weight: 500; background: transparent; }
+        .search-field::placeholder { color: var(--ink-ghost); font-weight: 400; }
+        .run-btn { background: var(--brand-primary); color: white; border: none; padding: 24px 50px; border-radius: 24px; font-weight: 800; font-size: 17px; cursor: pointer; transition: var(--transition-smooth); display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+        .run-btn:hover { background: var(--brand-dark); transform: scale(1.05); }
+
+        /* TRUST BAR */
+        .trust-bar { display: flex; justify-content: center; align-items: center; gap: 64px; padding: 64px 20px; background: var(--bg-card); border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); }
+        .trust-stat { text-align: center; }
+        .trust-stat .num { font-family: var(--font-serif); font-size: 42px; font-weight: 700; color: var(--ink-primary); line-height: 1; }
+        .trust-stat .num span { color: var(--brand-primary); }
+        .trust-stat .lbl { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--ink-ghost); margin-top: 8px; }
+        .trust-divider { width: 1px; height: 60px; background: var(--border-light); }
+
+        /* CONFIG GRID */
+        .config-grid { max-width: 960px; margin: 60px auto 80px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; padding: 0 20px; }
+        .config-item { background: var(--bg-card); border: 1px solid var(--border-light); padding: 32px; border-radius: var(--radius-lg); transition: var(--transition-smooth); cursor: pointer; position: relative; overflow: hidden; }
+        .config-item:hover { border-color: var(--ink-primary); box-shadow: var(--shadow-md); }
+        .config-item label { display: block; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 2.5px; color: var(--ink-ghost); margin-bottom: 16px; font-weight: 600; }
+        .config-item select { width: 100%; border: none; background: transparent; font-size: 17px; font-weight: 800; color: var(--ink-primary); outline: none; appearance: none; cursor: pointer; font-family: var(--font-main); }
+        .config-item::after { content: "↓"; position: absolute; right: 32px; bottom: 32px; color: var(--ink-ghost); font-weight: 900; }
+
+        /* HOW IT WORKS */
+        .how-section { background: var(--bg-canvas); padding: 120px 20px; }
+        .section-eyebrow { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: var(--brand-primary); text-align: center; margin-bottom: 20px; font-weight: 800; }
+        .section-headline { font-family: var(--font-serif); font-size: clamp(32px,4vw,52px); font-weight: 700; text-align: center; letter-spacing: -1.5px; margin-bottom: 16px; }
+        .section-sub { font-size: 18px; color: var(--ink-secondary); text-align: center; max-width: 600px; margin: 0 auto 80px; }
+        .how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; max-width: 1100px; margin: 0 auto; }
+        .how-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 48px 40px; transition: var(--transition-smooth); position: relative; overflow: hidden; }
+        .how-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); border-color: var(--brand-primary); }
+        .how-card::before { content: attr(data-num); position: absolute; top: -20px; right: 24px; font-family: var(--font-serif); font-size: 120px; font-weight: 700; color: var(--brand-glow); line-height: 1; pointer-events: none; transition: var(--transition-smooth); }
+        .how-card:hover::before { color: rgba(225,29,72,0.12); }
+        .how-icon { font-size: 40px; margin-bottom: 24px; display: block; }
+        .how-card h3 { font-family: var(--font-serif); font-size: 24px; font-weight: 700; margin-bottom: 16px; }
+        .how-card p { font-size: 15px; color: var(--ink-secondary); line-height: 1.7; }
+
+        /* ================================================================
+           JURISDICTION SHOWCASE — WITH LEAFLET MAPS
+           ================================================================ */
+        .jurisdictions-section { padding: 120px 20px; background: var(--bg-card); }
+        .jurisdiction-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 60px; flex-wrap: wrap; }
+        .j-tab { padding: 12px 28px; border-radius: 99px; border: 1px solid var(--border-light); font-size: 14px; font-weight: 700; cursor: pointer; transition: var(--transition-snap); background: var(--bg-canvas); color: var(--ink-secondary); }
+        .j-tab.active, .j-tab:hover { background: var(--ink-primary); color: white; border-color: var(--ink-primary); }
+
+        .jurisdiction-panels-wrapper { max-width: 960px; margin: 0 auto; position: relative; overflow: hidden; min-height: 360px; }
+        .jurisdiction-panel {
+            display: none; grid-template-columns: 1fr 1fr; gap: 40px;
+            opacity: 0; transform: translateX(40px);
+            transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
+        }
+        .jurisdiction-panel.active { display: grid; opacity: 1; transform: translateX(0); }
+        .jurisdiction-panel.slide-out { opacity: 0; transform: translateX(-40px); }
+
+        .j-info-block { padding: 40px; background: var(--bg-alt); border-radius: var(--radius-lg); }
+        .j-info-block h3 { font-family: var(--font-serif); font-size: 28px; font-weight: 700; margin-bottom: 16px; }
+        .j-info-block p { color: var(--ink-secondary); font-size: 15px; line-height: 1.7; margin-bottom: 20px; }
+        .j-stat-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; font-size: 14px; }
+        .j-stat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand-primary); flex-shrink: 0; }
+
+        /* Leaflet map container inside jurisdiction card */
+        .j-map-visual {
+            border-radius: var(--radius-lg); overflow: hidden;
+            min-height: 300px; position: relative; border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-md);
+        }
+        .j-leaflet-map { width: 100%; height: 300px; }
+        .j-licence-badge {
+            position: absolute; bottom: 16px; left: 16px; background: white;
+            padding: 10px 18px; border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+            font-family: var(--font-mono); font-size: 12px; font-weight: 600; z-index: 1000;
+            pointer-events: none;
+        }
+        .j-licence-badge span { color: var(--brand-primary); }
+
+        /* Map pin animation */
+        @keyframes pinPulse {
+            0% { transform: scale(1); opacity: 1; }
+            70% { transform: scale(2.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+        .leaflet-marker-icon { transition: transform 0.3s ease; }
+
+        /* PRICING */
+        .pricing-section { padding: 120px 20px; background: var(--bg-canvas); }
+        .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; max-width: 1100px; margin: 0 auto; }
+        .pricing-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius-xl); padding: 52px 44px; transition: var(--transition-smooth); position: relative; overflow: hidden; }
+        .pricing-card:hover { transform: translateY(-12px); box-shadow: var(--shadow-xl); }
+        .pricing-card.featured { background: var(--ink-primary); color: white; border-color: var(--ink-primary); transform: scale(1.04); }
+        .pricing-card.featured:hover { transform: scale(1.04) translateY(-12px); }
+        .plan-badge { display: inline-block; padding: 6px 16px; border-radius: 99px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 28px; }
+        .pricing-card .plan-badge { background: var(--brand-glow); color: var(--brand-primary); }
+        .pricing-card.featured .plan-badge { background: rgba(225,29,72,0.2); color: #f87171; }
+        .plan-name { font-family: var(--font-serif); font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+        .pricing-card.featured .plan-name { color: white; }
+        .plan-price { font-size: 56px; font-weight: 900; line-height: 1; margin-bottom: 8px; }
+        .pricing-card.featured .plan-price { color: white; }
+        .plan-price sup { font-size: 24px; vertical-align: super; }
+        .plan-period { font-family: var(--font-mono); font-size: 12px; color: var(--ink-ghost); margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; }
+        .pricing-card.featured .plan-period { color: rgba(255,255,255,0.5); }
+        .plan-features { list-style: none; margin-bottom: 40px; }
+        .plan-features li { font-size: 14px; padding: 12px 0; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 12px; color: var(--ink-secondary); }
+        .pricing-card.featured .plan-features li { border-bottom-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
+        .plan-features li::before { content: "✓"; color: var(--status-success); font-weight: 900; flex-shrink: 0; }
+        .pricing-card.featured .plan-features li::before { color: #4ade80; }
+        .plan-cta { width: 100%; padding: 18px; border-radius: var(--radius-md); font-weight: 800; font-size: 15px; cursor: pointer; border: none; transition: var(--transition-smooth); }
+        .pricing-card .plan-cta { background: var(--ink-primary); color: white; }
+        .pricing-card .plan-cta:hover { background: #000; box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+        .pricing-card.featured .plan-cta { background: var(--brand-primary); color: white; }
+        .pricing-card.featured .plan-cta:hover { background: var(--brand-dark); }
+
+        /* TESTIMONIALS */
+        .testimonials-section { padding: 120px 20px; background: var(--bg-card); }
+        .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; max-width: 1200px; margin: 0 auto; }
+        .testimonial-card { background: var(--bg-alt); border-radius: var(--radius-lg); padding: 44px 40px; border: 1px solid var(--border-light); transition: var(--transition-smooth); }
+        .testimonial-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+        .stars { color: var(--status-warning); font-size: 20px; margin-bottom: 20px; letter-spacing: 2px; }
+        .testimonial-text { font-family: var(--font-serif); font-size: 17px; font-style: italic; line-height: 1.7; color: var(--ink-primary); margin-bottom: 28px; }
+        .testimonial-author { display: flex; align-items: center; gap: 16px; }
+        .author-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; color: white; flex-shrink: 0; }
+        .author-name { font-weight: 800; font-size: 15px; }
+        .author-role { font-size: 13px; color: var(--ink-ghost); font-family: var(--font-mono); }
+
+        /* ANALYSIS LOADER */
+        #analysis-loader { display: none; padding: 180px 0; text-align: center; background: var(--bg-canvas); }
+        .loader-visual { position: relative; width: 100px; height: 100px; margin: 0 auto 40px; }
+        .loader-circle { position: absolute; width: 100%; height: 100%; border: 4px solid var(--brand-glow); border-top: 4px solid var(--brand-primary); border-radius: 50%; animation: spin 1s cubic-bezier(0.5,0,0.5,1) infinite; }
+        .loader-circle:nth-child(2) { width: 70%; height: 70%; top: 15%; left: 15%; animation-delay: -0.3s; opacity: 0.5; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loader-status-text { font-family: var(--font-serif); font-size: 28px; font-weight: 600; margin-bottom: 12px; }
+        .loader-sub-text { font-family: var(--font-mono); color: var(--ink-ghost); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; }
+        .loader-steps { max-width: 400px; margin: 40px auto 0; }
+        .loader-step { display: flex; align-items: center; gap: 12px; padding: 10px 0; font-size: 14px; color: var(--ink-ghost); border-bottom: 1px solid var(--border-light); transition: var(--transition-snap); }
+        .loader-step.done { color: var(--status-success); }
+        .loader-step .step-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+        /* REPORT */
+        #report-nexus { display: none; max-width: 1300px; margin: 0 auto 120px; padding: 0 40px; animation: reportReveal 1s var(--transition-smooth); }
+        @keyframes reportReveal { from { opacity: 0; transform: translateY(100px); } }
+        .nexus-grid { display: grid; grid-template-columns: 1fr 400px; gap: 40px; align-items: start; }
+        .nexus-main { background: var(--bg-card); border-radius: var(--radius-xl); border: 1px solid var(--border-light); box-shadow: var(--shadow-xl); overflow: hidden; }
+        .nexus-header { padding: 80px; background: linear-gradient(to right, #fafafa, #ffffff); border-bottom: 1px solid var(--border-light); position: relative; }
+        .nexus-header::before { content: ""; position: absolute; left: 0; top: 0; width: 8px; height: 100%; background: var(--brand-primary); }
+        .report-meta { font-family: var(--font-mono); font-size: 12px; color: var(--ink-ghost); margin-bottom: 20px; }
+        .report-title { font-family: var(--font-serif); font-size: 52px; line-height: 1.1; font-weight: 700; margin-bottom: 24px; }
+        .status-badge { display: inline-flex; align-items: center; padding: 10px 24px; border-radius: 99px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
+        .status-badge.green { background: var(--status-success-soft); color: var(--status-success); }
+        .status-badge.amber { background: var(--status-warning-soft); color: var(--status-warning); }
+        .status-badge.red { background: var(--status-error-soft); color: var(--status-error); }
+        .nexus-body { padding: 80px; }
+        .report-section { margin-bottom: 80px; }
+        .report-section-title { font-family: var(--font-serif); font-size: 32px; margin-bottom: 32px; display: flex; align-items: center; gap: 20px; }
+        .report-section-title span { color: var(--brand-primary); font-family: var(--font-mono); font-size: 16px; font-weight: 900; }
+        .metric-card { margin-top: 40px; padding: 40px; background: var(--bg-alt); border-radius: var(--radius-lg); }
+        .progress-container { height: 16px; background: #e2e8f0; border-radius: 8px; overflow: hidden; margin: 24px 0; }
+        .progress-fill { height: 100%; border-radius: 8px; width: 0%; transition: width 2.5s cubic-bezier(0.16,1,0.3,1); }
+        .roadmap-container { position: relative; }
+        .roadmap-container::before { content: ""; position: absolute; left: 27px; top: 0; width: 2px; height: 100%; background: var(--border-light); }
+        .roadmap-item { position: relative; padding-left: 80px; margin-bottom: 48px; transition: var(--transition-smooth); }
+        .roadmap-item:hover { transform: translateX(15px); }
+        .roadmap-dot { position: absolute; left: 18px; top: 0; width: 20px; height: 20px; background: var(--bg-card); border: 4px solid var(--brand-primary); border-radius: 50%; z-index: 5; }
+        .roadmap-phase { font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: var(--brand-primary); text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .roadmap-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+        .roadmap-text { color: var(--ink-secondary); font-size: 15px; max-width: 600px; }
+
+        /* CHECKLIST */
+        .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 32px; }
+        .check-item { display: flex; align-items: flex-start; gap: 14px; padding: 20px; background: var(--bg-alt); border-radius: var(--radius-md); transition: var(--transition-snap); cursor: pointer; border: 2px solid transparent; }
+        .check-item:hover { border-color: var(--border-med); }
+        .check-item.checked { border-color: var(--status-success); background: var(--status-success-soft); }
+        .check-box { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--border-med); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: var(--transition-snap); margin-top: 2px; }
+        .check-item.checked .check-box { background: var(--status-success); border-color: var(--status-success); color: white; }
+        .check-label { font-size: 14px; font-weight: 600; line-height: 1.5; }
+        .check-sub { font-size: 12px; color: var(--ink-ghost); margin-top: 4px; }
+
+        /* DOCS */
+        .doc-list { margin-top: 28px; }
+        .doc-item { display: flex; align-items: center; gap: 20px; padding: 20px 24px; background: var(--bg-alt); border-radius: var(--radius-md); margin-bottom: 12px; border: 1px solid var(--border-light); transition: var(--transition-snap); }
+        .doc-item:hover { border-color: var(--brand-primary); transform: translateX(4px); }
+        .doc-icon { width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--brand-glow); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .doc-info { flex: 1; }
+        .doc-name { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+        .doc-source { font-family: var(--font-mono); font-size: 11px; color: var(--ink-ghost); text-transform: uppercase; letter-spacing: 1px; }
+        .doc-status { padding: 6px 14px; border-radius: 99px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .doc-status.required { background: var(--status-warning-soft); color: var(--status-warning); }
+        .doc-status.optional { background: var(--status-info-soft); color: var(--status-info); }
+        .doc-status.critical { background: var(--status-error-soft); color: var(--status-error); }
+
+        /* SIDEBAR */
+        .nexus-sidebar { position: sticky; top: 120px; }
+        .widget-box { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 40px; margin-bottom: 32px; box-shadow: var(--shadow-md); }
+        .widget-title { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: var(--ink-ghost); margin-bottom: 24px; font-weight: 800; }
+        .fee-row { display: flex; justify-content: space-between; margin-bottom: 16px; font-size: 15px; font-weight: 500; }
+        .fee-total { border-top: 2px solid var(--ink-primary); margin-top: 24px; padding-top: 24px; font-size: 28px; font-weight: 900; color: var(--brand-primary); }
+        .action-btn { width: 100%; padding: 20px; border-radius: var(--radius-md); font-weight: 800; font-size: 15px; cursor: pointer; transition: var(--transition-smooth); margin-bottom: 12px; text-align: center; border: none; font-family: var(--font-main); }
+        .btn-solid { background: var(--ink-primary); color: white; }
+        .btn-solid:hover { background: #000; box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+        .btn-ghost { background: transparent; border: 1px solid var(--border-light); color: var(--ink-primary); }
+        .btn-ghost:hover { background: var(--bg-alt); }
+        .btn-brand { background: var(--brand-primary); color: white; }
+        .btn-brand:hover { background: var(--brand-dark); box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+        .timeline-widget { margin-top: 8px; }
+        .timeline-week { display: flex; align-items: flex-start; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border-light); }
+        .week-label { font-family: var(--font-mono); font-size: 10px; font-weight: 800; color: var(--brand-primary); text-transform: uppercase; width: 44px; flex-shrink: 0; margin-top: 4px; }
+        .week-task { font-size: 13px; font-weight: 600; line-height: 1.5; }
+        .week-sub { font-size: 12px; color: var(--ink-ghost); }
+
+        /* INLINE GIS MAP (report) */
+        .gis-map { width: 100%; height: 260px; border-radius: var(--radius-md); margin-top: 32px; overflow: hidden; border: 1px solid var(--border-light); }
+
+        /* ================================================================
+           GIS PAGE — LEAFLET (FULLY ACCESSIBLE)
+           ================================================================ */
+        #bylaw-page, #gis-page, #pricing-page { display: none; }
+        .bylaw-search-section { padding: 200px 20px 80px; background: var(--bg-canvas); }
+        .bylaw-search-bar { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius-xl); display: flex; align-items: center; max-width: 800px; margin: 0 auto; box-shadow: var(--shadow-xl); overflow: hidden; }
+        .bylaw-input { flex: 1; padding: 20px 32px; border: none; outline: none; font-size: 18px; font-family: var(--font-main); }
+        .bylaw-search-btn { padding: 20px 40px; background: var(--brand-primary); color: white; border: none; font-weight: 800; font-size: 15px; cursor: pointer; font-family: var(--font-main); }
+        .bylaw-search-btn:hover { background: var(--brand-dark); }
+        .bylaw-results { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        .bylaw-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 40px; margin-bottom: 24px; transition: var(--transition-smooth); }
+        .bylaw-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
+        .bylaw-num { font-family: var(--font-mono); font-size: 12px; color: var(--brand-primary); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+        .bylaw-title { font-family: var(--font-serif); font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+        .bylaw-excerpt { color: var(--ink-secondary); font-size: 14px; line-height: 1.7; margin-bottom: 16px; }
+        .bylaw-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+        .bylaw-tag { padding: 4px 12px; border-radius: 99px; background: var(--bg-alt); font-size: 12px; font-weight: 700; color: var(--ink-secondary); }
+
+        /* GIS page layout */
+        .gis-page-layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; padding-top: 132px; }
+        .gis-sidebar { background: var(--bg-card); border-right: 1px solid var(--border-light); padding: 40px 32px; overflow-y: auto; }
+        .gis-filter-title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--ink-ghost); margin-bottom: 16px; font-weight: 800; }
+        .gis-filter-option { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius-md); cursor: pointer; font-size: 14px; font-weight: 600; transition: var(--transition-snap); margin-bottom: 8px; }
+        .gis-filter-option:hover, .gis-filter-option.active { background: var(--brand-glow); color: var(--brand-primary); }
+        .gis-filter-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .gis-main-display { position: relative; overflow: hidden; }
+
+        /* Full-height Leaflet map */
+        #gis-leaflet-map { width: 100%; height: calc(100vh - 132px); min-height: 600px; }
+
+        /* Zone legend panel */
+        .gis-ui-panel { position: absolute; top: 24px; right: 24px; background: var(--bg-card); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-xl); width: 220px; z-index: 1000; }
+        .gis-legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 13px; font-weight: 600; }
+        .gis-legend-dot { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+
+        /* Custom Leaflet popup styling */
+        .leaflet-popup-content-wrapper { border-radius: 16px !important; box-shadow: var(--shadow-xl) !important; font-family: var(--font-main); }
+        .leaflet-popup-content { margin: 0 !important; }
+        .zone-popup { padding: 20px; min-width: 260px; }
+        .zone-popup-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--brand-primary); margin-bottom: 8px; }
+        .zone-popup-name { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
+        .zone-popup-desc { font-size: 13px; color: var(--ink-secondary); line-height: 1.6; margin-bottom: 14px; }
+        .zone-popup-btn { background: var(--brand-primary); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 12px; cursor: pointer; width: 100%; font-family: var(--font-main); transition: background 0.2s; }
+        .zone-popup-btn:hover { background: var(--brand-dark); }
+
+        /* MODAL SYSTEM */
+        .modal-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.7); backdrop-filter: blur(20px); z-index: 9999; align-items: center; justify-content: center; padding: 20px; }
+        .modal-mask.open { display: flex; }
+        .modal-surface { background: var(--bg-card); max-width: 560px; width: 100%; padding: 80px; border-radius: var(--radius-xl); text-align: center; box-shadow: var(--shadow-xl); animation: modalScale 0.6s cubic-bezier(0.16,1,0.3,1); position: relative; }
+        .modal-close { position: absolute; top: 24px; right: 24px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border-light); background: var(--bg-alt); cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; transition: var(--transition-snap); }
+        .modal-close:hover { background: var(--border-light); }
+        @keyframes modalScale { from { transform: scale(0.8) translateY(50px); opacity: 0; } }
+        .modal-icon { font-size: 80px; margin-bottom: 32px; }
+        .modal-title { font-family: var(--font-serif); font-size: 36px; font-weight: 700; margin-bottom: 20px; line-height: 1.2; }
+        .modal-copy { font-size: 18px; color: var(--ink-secondary); margin-bottom: 40px; line-height: 1.7; }
+        .modal-form-group { text-align: left; margin-bottom: 20px; }
+        .modal-form-group label { font-family: var(--font-mono); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--ink-secondary); display: block; margin-bottom: 8px; }
+        .modal-input { width: 100%; padding: 16px 20px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 16px; font-family: var(--font-main); outline: none; transition: var(--transition-snap); }
+        .modal-input:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px var(--brand-glow); }
+        .modal-divider { display: flex; align-items: center; gap: 16px; margin: 24px 0; color: var(--ink-ghost); font-size: 13px; }
+        .modal-divider::before, .modal-divider::after { content: ""; flex: 1; height: 1px; background: var(--border-light); }
+        .modal-link { color: var(--brand-primary); font-weight: 700; cursor: pointer; }
+        .expert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; text-align: left; }
+        .expert-card { padding: 20px; border: 1px solid var(--border-light); border-radius: var(--radius-md); cursor: pointer; transition: var(--transition-snap); }
+        .expert-card:hover, .expert-card.selected { border-color: var(--brand-primary); background: var(--brand-glow); }
+        .expert-name { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
+        .expert-spec { font-size: 12px; color: var(--ink-ghost); font-family: var(--font-mono); }
+        .expert-rating { color: var(--status-warning); font-size: 13px; margin-top: 8px; }
+        .avail-badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; background: var(--status-success-soft); color: var(--status-success); margin-top: 8px; }
+
+        /* FOOTER */
+        .site-footer { background: var(--ink-primary); color: white; padding: 120px 0 60px; }
+        .footer-inner { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+        .footer-grid { display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 80px; margin-bottom: 80px; }
+        .footer-brand h2 { font-family: var(--font-serif); font-size: 32px; margin-bottom: 24px; }
+        .footer-brand p { color: var(--ink-ghost); max-width: 320px; line-height: 1.7; }
+        .footer-col h4 { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 32px; color: var(--brand-primary); }
+        .footer-list { list-style: none; }
+        .footer-list li { margin-bottom: 16px; font-size: 14px; color: var(--ink-ghost); transition: 0.3s; cursor: pointer; }
+        .footer-list li:hover { color: white; padding-left: 8px; }
+        .newsletter-form { display: flex; gap: 8px; margin-top: 32px; }
+        .newsletter-input { flex: 1; padding: 14px 18px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-family: var(--font-main); font-size: 14px; outline: none; }
+        .newsletter-input::placeholder { color: rgba(255,255,255,0.3); }
+        .newsletter-input:focus { border-color: var(--brand-primary); }
+        .newsletter-btn { padding: 14px 20px; background: var(--brand-primary); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; font-weight: 800; font-family: var(--font-main); transition: var(--transition-snap); }
+        .newsletter-btn:hover { background: var(--brand-dark); }
+        .footer-bottom { padding-top: 60px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--ink-ghost); }
+        .footer-social { display: flex; gap: 16px; }
+        .social-link { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; color: var(--ink-ghost); cursor: pointer; transition: var(--transition-snap); font-size: 14px; }
+        .social-link:hover { border-color: var(--brand-primary); color: var(--brand-primary); }
+        .footer-legal { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 32px; margin-top: 32px; font-size: 12px; color: rgba(255,255,255,0.35); line-height: 1.7; font-family: var(--font-mono); }
+        .footer-legal strong { color: rgba(255,255,255,0.55); }
+
+        /* TOAST */
+        #toast-container { position: fixed; bottom: 32px; right: 32px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; }
+        .toast { background: var(--ink-primary); color: white; padding: 18px 24px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; box-shadow: var(--shadow-xl); display: flex; align-items: center; gap: 12px; animation: toastIn 0.4s ease-out; max-width: 360px; border-left: 4px solid var(--brand-primary); }
+        .toast.success { border-left-color: var(--status-success); }
+        .toast.info { border-left-color: var(--status-info); }
+        @keyframes toastIn { from { transform: translateX(120px); opacity: 0; } }
+        @keyframes toastOut { to { transform: translateX(120px); opacity: 0; } }
+
+        /* RESPONSIVE */
+        @media (max-width: 1100px) { .nexus-grid { grid-template-columns: 1fr; } .nexus-sidebar { position: static; } .how-grid { grid-template-columns: 1fr 1fr; } .pricing-grid { grid-template-columns: 1fr 1fr; } .gis-page-layout { grid-template-columns: 1fr; } #gis-leaflet-map { height: 500px; } }
+        @media (max-width: 768px) { .site-header { padding: 0 24px; } .nav-menu { display: none; } .config-grid { grid-template-columns: 1fr; } .nexus-header, .nexus-body { padding: 40px; } .report-title { font-size: 36px; } .footer-grid { grid-template-columns: 1fr; gap: 40px; } .how-grid { grid-template-columns: 1fr; } .pricing-grid { grid-template-columns: 1fr; } .testimonials-grid { grid-template-columns: 1fr; } .trust-bar { flex-wrap: wrap; gap: 32px; } .trust-divider { display: none; } .checklist-grid { grid-template-columns: 1fr; } .jurisdiction-panel { grid-template-columns: 1fr !important; } }
+        @media print { .site-header, .hero-section, .config-grid, .site-footer, .action-btn, .how-section, .pricing-section, .testimonials-section, .trust-bar, .jurisdictions-section, .legal-disclaimer-banner { display: none !important; } body { background: white; } #report-nexus { display: block !important; padding: 0; } .nexus-grid { display: block; } .nexus-main { border: none; box-shadow: none; } .nexus-header { padding: 40px 0; } .nexus-body { padding: 40px 0; } .nexus-sidebar { display: none; } }
+    </style>
+</head>
+<body>
+
+<!-- LEGAL DISCLAIMER BANNER -->
+<div class="legal-disclaimer-banner" id="legal-banner">
+    <span>⚖️</span>
+    <span><strong>Legal Disclaimer:</strong> The information provided on PermitPal is for informational purposes only and does <strong>not</strong> constitute legal advice. Always consult a qualified legal professional before making compliance or business decisions.</span>
+    <button class="dismiss-btn" onclick="dismissBanner()">Dismiss</button>
+</div>
+
+<!-- HEADER -->
+<header class="site-header" id="header">
+    <a class="brand-block" onclick="showPage('home')">
+        <div class="brand-icon"></div>
+        <h1 class="brand-name">Permit<span>Pal</span></h1>
+    </a>
+    <nav>
+        <ul class="nav-menu">
+            <li><span class="nav-link" onclick="showPage('bylaw')">Bylaw Engine</span></li>
+            <li><span class="nav-link" onclick="showPage('jurisdictions')">Jurisdictions</span></li>
+            <li><span class="nav-link" onclick="showPage('gis')">GIS Maps</span></li>
+            <li><span class="nav-link" onclick="showPage('pricing')">Pricing</span></li>
+        </ul>
+    </nav>
+    <div class="header-cta-group">
+        <button class="action-btn btn-ghost" style="padding:12px 24px;width:auto;font-size:13px;" onclick="openModal('login-modal')">Login</button>
+        <button class="action-btn btn-brand" style="padding:12px 24px;width:auto;font-size:13px;" onclick="openModal('signup-modal')">Get Started</button>
+    </div>
+</header>
+
+<!-- HOME PAGE -->
+<div id="home-page">
+
+    <section class="hero-section">
+        <div class="hero-badge">2026 Regulatory Intelligence</div>
+        <h2 class="hero-title">Validate your business vision against <em>Real-Time</em> Canadian Bylaws.</h2>
+        <p class="hero-sub">PermitPal uses algorithmic compliance mapping to analyze zoning, permits, and tax codes across Ontario's major municipalities.</p>
+        <div class="omni-search-container">
+            <div class="omni-search-bar">
+                <input type="text" id="query-input" class="search-field" placeholder="e.g., 'Open a high-end coffee shop with a patio'..." onkeydown="if(event.key==='Enter') executeNexusAnalysis()">
+                <button class="run-btn" onclick="executeNexusAnalysis()">
+                    Analyze Legality
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <div class="trust-bar">
+        <div class="trust-stat"><div class="num">14<span>k+</span></div><div class="lbl">Analyses Run</div></div>
+        <div class="trust-divider"></div>
+        <div class="trust-stat"><div class="num">97<span>%</span></div><div class="lbl">Compliance Rate</div></div>
+        <div class="trust-divider"></div>
+        <div class="trust-stat"><div class="num">5</div><div class="lbl">Ontario Jurisdictions</div></div>
+        <div class="trust-divider"></div>
+        <div class="trust-stat"><div class="num">72<span>h</span></div><div class="lbl">DB Update Cycle</div></div>
+    </div>
+
+    <div class="config-grid">
+        <div class="config-item">
+            <label>Regional Jurisdiction</label>
+            <select id="param-city">
+                <option value="Waterloo">Waterloo, ON (Region)</option>
+                <option value="Kitchener">Kitchener, ON</option>
+                <option value="Cambridge">Cambridge, ON</option>
+                <option value="Toronto">Toronto, ON (GTA)</option>
+                <option value="Guelph">Guelph, ON</option>
+            </select>
+        </div>
+        <div class="config-item">
+            <label>Legal Entity Class</label>
+            <select id="param-structure">
+                <option value="Sole">Sole Proprietorship</option>
+                <option value="Corp">Incorporated (Federal/Prov)</option>
+                <option value="NonProfit">Non-Profit Organization</option>
+                <option value="Partnership">General Partnership</option>
+            </select>
+        </div>
+        <div class="config-item">
+            <label>Operational Footprint</label>
+            <select id="param-traffic">
+                <option value="Remote">Home-Based / Digital</option>
+                <option value="ByAppt">Appointment Only (PSS)</option>
+                <option value="Retail">Commercial Retail Space</option>
+                <option value="Industrial">Light Industrial / Hub</option>
+            </select>
+        </div>
+    </div>
+
+    <section id="analysis-loader">
+        <div class="loader-visual"><div class="loader-circle"></div><div class="loader-circle"></div></div>
+        <h3 class="loader-status-text" id="load-status">Initializing Engine...</h3>
+        <p class="loader-sub-text" id="load-sub">Connecting to Ontario Registry</p>
+        <div class="loader-steps" id="loader-step-list"></div>
+    </section>
+
+    <main id="report-nexus">
+        <div class="nexus-grid">
+            <div class="nexus-main">
+                <header class="nexus-header">
+                    <p class="report-meta" id="r-ref-id"></p>
+                    <div id="r-status-badge" style="margin-bottom:20px;"></div>
+                    <h2 class="report-title" id="r-title">Project Analysis</h2>
+                    <p id="r-timestamp" style="font-family:var(--font-mono);font-size:13px;color:var(--ink-ghost);"></p>
+                </header>
+                <div class="nexus-body">
+                    <section class="report-section">
+                        <h3 class="report-section-title"><span>01</span> Spatial Zoning Analysis</h3>
+                        <p id="r-zoning-text" style="font-size:16px;color:var(--ink-secondary);line-height:1.8;"></p>
+                        <!-- Leaflet mini-map for report -->
+                        <div class="gis-map" id="report-mini-map"></div>
+                    </section>
+                    <section class="report-section">
+                        <h3 class="report-section-title"><span>02</span> Complexity & Risk Matrix</h3>
+                        <p id="r-risk-desc" style="font-size:16px;color:var(--ink-secondary);"></p>
+                        <div class="metric-card">
+                            <div style="display:flex;justify-content:space-between;font-weight:800;"><span id="r-risk-label">Regulatory Burden</span><span id="r-risk-value">0%</span></div>
+                            <div class="progress-container"><div class="progress-fill" id="r-risk-bar"></div></div>
+                            <p style="font-size:12px;color:var(--ink-ghost);margin-top:12px;">*Score calculated based on municipal oversight requirements and safety auditing frequency.</p>
+                        </div>
+                    </section>
+                    <section class="report-section">
+                        <h3 class="report-section-title"><span>03</span> Compliance Pre-Checks</h3>
+                        <p style="font-size:15px;color:var(--ink-secondary);margin-bottom:8px;">Mark items as completed to track your readiness.</p>
+                        <div class="checklist-grid" id="r-checklist"></div>
+                    </section>
+                    <section class="report-section">
+                        <h3 class="report-section-title"><span>04</span> Required Documentation</h3>
+                        <div class="doc-list" id="r-doc-list"></div>
+                    </section>
+                    <section class="report-section">
+                        <h3 class="report-section-title"><span>05</span> The Pre-Launch Pipeline</h3>
+                        <div class="roadmap-container" id="r-roadmap"></div>
+                    </section>
+                </div>
+            </div>
+            <aside class="nexus-sidebar">
+                <div class="widget-box">
+                    <h4 class="widget-title">Municipal Capital Required</h4>
+                    <div id="r-fees-list"></div>
+                    <div class="fee-total" id="r-grand-total"></div>
+                    <p style="font-size:11px;color:var(--ink-ghost);margin-top:16px;">*Figures are municipal estimates for the 2026 fiscal year in Ontario.</p>
+                </div>
+                <div class="widget-box">
+                    <h4 class="widget-title">Estimated Timeline</h4>
+                    <div class="timeline-widget" id="r-timeline"></div>
+                </div>
+                <div class="widget-box">
+                    <h4 class="widget-title">Fiscal Obligations (CRA)</h4>
+                    <div style="font-size:14px;line-height:1.7;">
+                        <div style="margin-bottom:12px;"><strong>HST:</strong> 13% Provincial Rate</div>
+                        <div style="margin-bottom:12px;"><strong>Small Biz Tax:</strong> 12.2% (Combined)</div>
+                        <div style="margin-bottom:12px;"><strong>Payroll:</strong> CPP (5.95%) &amp; EI (1.66%)</div>
+                        <div style="margin-bottom:12px;"><strong>HST Threshold:</strong> $30,000 CAD Annual</div>
+                    </div>
+                </div>
+                <div style="padding:0 10px;">
+                    <button class="action-btn btn-brand" onclick="window.print()">Export Official Report (PDF)</button>
+                    <button class="action-btn btn-solid" onclick="openModal('share-modal')">Share This Report</button>
+                    <button class="action-btn btn-ghost" onclick="showPage('home');location.reload()">New Compliance Search</button>
+                    <button class="action-btn btn-ghost" style="color:var(--brand-primary);border-color:var(--brand-primary);" onclick="openModal('expert-modal')">Speak with Local Expert</button>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- HOW IT WORKS -->
+    <section class="how-section" id="how-section">
+        <p class="section-eyebrow">How It Works</p>
+        <h2 class="section-headline">Compliance in Three Moves</h2>
+        <p class="section-sub">PermitPal cross-references five live government data sources to produce a legally-grounded compliance report in seconds.</p>
+        <div class="how-grid">
+            <div class="how-card" data-num="01"><span class="how-icon">🔍</span><h3>Describe Your Business</h3><p>Enter your business concept in plain language. Our NLP engine classifies it against 47 regulated industry categories across Ontario.</p></div>
+            <div class="how-card" data-num="02"><span class="how-icon">🗺️</span><h3>Configure Parameters</h3><p>Select your target municipality, legal entity structure, and operational footprint. These three variables determine your exact regulatory environment.</p></div>
+            <div class="how-card" data-num="03"><span class="how-icon">📋</span><h3>Receive Your Report</h3><p>Instant compliance analysis including zoning maps, permit roadmaps, document checklists, and a full cost estimate — exportable as a PDF.</p></div>
+        </div>
+    </section>
+
+    <!-- JURISDICTIONS WITH LEAFLET MAPS -->
+    <section class="jurisdictions-section" id="jurisdictions-section">
+        <p class="section-eyebrow">Our Coverage</p>
+        <h2 class="section-headline">5 Ontario Jurisdictions Indexed</h2>
+        <p class="section-sub">Full bylaw coverage across the Waterloo Region and Greater Toronto Area.</p>
+        <div class="jurisdiction-tabs">
+            <button class="j-tab active" onclick="switchJTab(this, 'j-waterloo')">Waterloo</button>
+            <button class="j-tab" onclick="switchJTab(this, 'j-kitchener')">Kitchener</button>
+            <button class="j-tab" onclick="switchJTab(this, 'j-cambridge')">Cambridge</button>
+            <button class="j-tab" onclick="switchJTab(this, 'j-toronto')">Toronto</button>
+            <button class="j-tab" onclick="switchJTab(this, 'j-guelph')">Guelph</button>
+        </div>
+        <div class="jurisdiction-panels-wrapper">
+            <div class="jurisdiction-panel active" id="j-waterloo">
+                <div class="j-info-block">
+                    <h3>Waterloo, ON</h3>
+                    <p>A tech-forward municipality with strong support for innovation-driven businesses. Bylaw 2018-050 governs home occupation and commercial zoning.</p>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Base Business Licence: <strong>$285/year</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Audit Frequency: <strong>Annual</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Heritage Zones: <strong>Uptown Core</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Home Occupation Limit: <strong>25% GFA</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Processing Time: <strong>4–8 weeks</strong></span></div>
+                </div>
+                <div class="j-map-visual">
+                    <div class="j-leaflet-map" id="map-waterloo"></div>
+                    <div class="j-licence-badge">Lic. Base: <span>$285/yr</span></div>
+                </div>
+            </div>
+            <div class="jurisdiction-panel" id="j-kitchener">
+                <div class="j-info-block">
+                    <h3>Kitchener, ON</h3>
+                    <p>A major economic hub with flexible live-work zoning in D-1 districts. High-traffic commercial operations require dedicated occupancy certificates.</p>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Base Business Licence: <strong>$320/year</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Audit Frequency: <strong>Bi-Annual</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Live-Work Zones: <strong>D-1 District</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Governing Bylaw: <strong>85-1</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Processing Time: <strong>6–10 weeks</strong></span></div>
+                </div>
+                <div class="j-map-visual">
+                    <div class="j-leaflet-map" id="map-kitchener"></div>
+                    <div class="j-licence-badge">Lic. Base: <span>$320/yr</span></div>
+                </div>
+            </div>
+            <div class="jurisdiction-panel" id="j-cambridge">
+                <div class="j-info-block">
+                    <h3>Cambridge, ON</h3>
+                    <p>Heritage Conservation Districts (HCDs) apply to the Galt and Preston cores. Industrial startups must demonstrate fire route accessibility compliance.</p>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Base Business Licence: <strong>$260/year</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Audit Frequency: <strong>Annual</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Heritage Districts: <strong>Galt + Preston HCDs</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Industrial Constraint: <strong>Fire Route Access</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Processing Time: <strong>3–6 weeks</strong></span></div>
+                </div>
+                <div class="j-map-visual">
+                    <div class="j-leaflet-map" id="map-cambridge"></div>
+                    <div class="j-licence-badge">Lic. Base: <span>$260/yr</span></div>
+                </div>
+            </div>
+            <div class="jurisdiction-panel" id="j-toronto">
+                <div class="j-info-block">
+                    <h3>Toronto, ON (GTA)</h3>
+                    <p>Canada's most complex municipal regulatory environment. Chapter 545 of the Toronto Municipal Code sets the highest bar for PSS and childcare operations.</p>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Base Business Licence: <strong>$495/year</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Audit Frequency: <strong>Quarterly</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Commercial Tax Multiplier: <strong>3.8x Residential</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Governing Code: <strong>Chapter 545</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Processing Time: <strong>10–16 weeks</strong></span></div>
+                </div>
+                <div class="j-map-visual">
+                    <div class="j-leaflet-map" id="map-toronto"></div>
+                    <div class="j-licence-badge">Lic. Base: <span>$495/yr</span></div>
+                </div>
+            </div>
+            <div class="jurisdiction-panel" id="j-guelph">
+                <div class="j-info-block">
+                    <h3>Guelph, ON</h3>
+                    <p>A growing city with strong environmental bylaws. Green building standards apply to new commercial construction. Food service has strong public health unit presence.</p>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Base Business Licence: <strong>$295/year</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Audit Frequency: <strong>Annual</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Green Standards: <strong>LEED Encouraged</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Food Permit: <strong>Wellington-Dufferin-Guelph PHU</strong></span></div>
+                    <div class="j-stat-row"><div class="j-stat-dot"></div><span>Processing Time: <strong>4–7 weeks</strong></span></div>
+                </div>
+                <div class="j-map-visual">
+                    <div class="j-leaflet-map" id="map-guelph"></div>
+                    <div class="j-licence-badge">Lic. Base: <span>$295/yr</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="testimonials-section">
+        <p class="section-eyebrow">From the Community</p>
+        <h2 class="section-headline">Trusted by Ontario Entrepreneurs</h2>
+        <p class="section-sub">Real stories from real business owners who used PermitPal before opening day.</p>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">"I was about to sign a lease in the wrong zone for my tattoo studio. PermitPal flagged it in seconds. Saved me $18,000 in a lease I couldn't use."</p>
+                <div class="testimonial-author"><div class="author-avatar" style="background:#8b5cf6;">A</div><div><div class="author-name">Alexia R.</div><div class="author-role">Tattoo Artist · Kitchener, ON</div></div></div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">"The document checklist alone was worth it. I had everything ready before my first inspection. Passed on the first visit — zero re-inspections."</p>
+                <div class="testimonial-author"><div class="author-avatar" style="background:#0ea5e9;">M</div><div><div class="author-name">Marcus T.</div><div class="author-role">Café Owner · Waterloo, ON</div></div></div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">★★★★☆</div>
+                <p class="testimonial-text">"As a non-profit running after-school programs, the compliance landscape was terrifying. PermitPal broke it down into phases I could actually follow."</p>
+                <div class="testimonial-author"><div class="author-avatar" style="background:#10b981;">D</div><div><div class="author-name">Damilola O.</div><div class="author-role">Non-Profit Director · Cambridge, ON</div></div></div>
+            </div>
+        </div>
+    </section>
+
+</div><!-- end #home-page -->
+
+<!-- BYLAW ENGINE PAGE -->
+<div id="bylaw-page">
+    <div class="bylaw-search-section">
+        <p class="section-eyebrow">Bylaw Engine</p>
+        <h2 class="section-headline" style="margin-bottom:16px;">Search Ontario Municipal Bylaws</h2>
+        <p class="section-sub" style="margin-bottom:48px;">Query our indexed database of 340+ Ontario municipal bylaws across 5 jurisdictions.</p>
+        <div class="bylaw-search-bar">
+            <input type="text" class="bylaw-input" id="bylaw-query" placeholder="Search bylaws, e.g. 'home occupation Waterloo'..." onkeydown="if(event.key==='Enter') searchBylaws()">
+            <button class="bylaw-search-btn" onclick="searchBylaws()">Search Database</button>
+        </div>
+    </div>
+    <div class="bylaw-results" id="bylaw-results">
+        <div style="text-align:center;padding:40px;color:var(--ink-ghost);">
+            <div style="font-size:48px;margin-bottom:16px;">📚</div>
+            <p style="font-family:var(--font-mono);text-transform:uppercase;letter-spacing:2px;font-size:13px;">Enter a search query to begin</p>
+        </div>
+    </div>
+</div>
+
+<!-- GIS MAP PAGE — FULL LEAFLET, NO BLOCKED AREAS -->
+<div id="gis-page">
+    <div class="gis-page-layout">
+        <div class="gis-sidebar">
+            <div style="margin-bottom:32px;">
+                <p class="gis-filter-title">Municipality</p>
+                <div class="gis-filter-option active" onclick="gisSetCity(this,'Kitchener',[43.4516,-80.4925],13)"><div class="gis-filter-dot" style="background:var(--brand-primary);"></div>Kitchener, ON</div>
+                <div class="gis-filter-option" onclick="gisSetCity(this,'Waterloo',[43.4668,-80.5164],13)"><div class="gis-filter-dot" style="background:#3b82f6;"></div>Waterloo, ON</div>
+                <div class="gis-filter-option" onclick="gisSetCity(this,'Cambridge',[43.3601,-80.3122],13)"><div class="gis-filter-dot" style="background:#10b981;"></div>Cambridge, ON</div>
+                <div class="gis-filter-option" onclick="gisSetCity(this,'Toronto',[43.6532,-79.3832],12)"><div class="gis-filter-dot" style="background:#f59e0b;"></div>Toronto, ON</div>
+                <div class="gis-filter-option" onclick="gisSetCity(this,'Guelph',[43.5448,-80.2482],13)"><div class="gis-filter-dot" style="background:#8b5cf6;"></div>Guelph, ON</div>
+            </div>
+            <div style="margin-bottom:32px;">
+                <p class="gis-filter-title">Zone Type Filter</p>
+                <div class="gis-filter-option active" id="filter-commercial" onclick="gisToggleFilter(this,'commercial')"><div class="gis-filter-dot" style="background:rgba(225,29,72,0.6);"></div>Commercial (C)</div>
+                <div class="gis-filter-option active" id="filter-residential" onclick="gisToggleFilter(this,'residential')"><div class="gis-filter-dot" style="background:rgba(59,130,246,0.6);"></div>Residential (R)</div>
+                <div class="gis-filter-option active" id="filter-industrial" onclick="gisToggleFilter(this,'industrial')"><div class="gis-filter-dot" style="background:rgba(16,185,129,0.6);"></div>Industrial (M)</div>
+                <div class="gis-filter-option active" id="filter-mixed" onclick="gisToggleFilter(this,'mixed')"><div class="gis-filter-dot" style="background:rgba(245,158,11,0.6);"></div>Mixed Use (MU)</div>
+                <div class="gis-filter-option active" id="filter-heritage" onclick="gisToggleFilter(this,'heritage')"><div class="gis-filter-dot" style="background:rgba(139,92,246,0.6);"></div>Heritage (HCD)</div>
+            </div>
+            <div>
+                <p class="gis-filter-title">Parcels Visible</p>
+                <div id="gis-parcel-count" style="font-family:var(--font-serif);font-size:36px;font-weight:700;color:var(--brand-primary);">284</div>
+                <div style="font-size:13px;color:var(--ink-ghost);margin-top:4px;">active commercial zones</div>
+            </div>
+            <div style="margin-top:32px;padding:16px;background:var(--bg-alt);border-radius:var(--radius-md);border-left:3px solid var(--brand-primary);">
+                <p style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-ghost);margin-bottom:6px;">Map powered by</p>
+                <p style="font-size:13px;font-weight:700;color:var(--ink-primary);">Leaflet.js + OpenStreetMap</p>
+                <p style="font-size:11px;color:var(--ink-ghost);margin-top:4px;line-height:1.5;">Click any zone polygon to inspect compliance details. All areas fully accessible.</p>
+            </div>
+        </div>
+        <div class="gis-main-display">
+            <div id="gis-leaflet-map"></div>
+            <div class="gis-ui-panel">
+                <div style="font-family:var(--font-mono);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--ink-ghost);margin-bottom:20px;">Zone Legend</div>
+                <div class="gis-legend-item"><div class="gis-legend-dot" style="background:rgba(225,29,72,0.5);"></div>Commercial (C)</div>
+                <div class="gis-legend-item"><div class="gis-legend-dot" style="background:rgba(59,130,246,0.5);"></div>Residential (R)</div>
+                <div class="gis-legend-item"><div class="gis-legend-dot" style="background:rgba(16,185,129,0.5);"></div>Industrial (M)</div>
+                <div class="gis-legend-item"><div class="gis-legend-dot" style="background:rgba(245,158,11,0.5);"></div>Mixed Use (MU)</div>
+                <div class="gis-legend-item"><div class="gis-legend-dot" style="background:rgba(139,92,246,0.5);"></div>Heritage (HCD)</div>
+                <div style="border-top:1px solid var(--border-light);padding-top:16px;margin-top:4px;font-family:var(--font-mono);font-size:11px;color:var(--ink-ghost);">Click zone to inspect</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PRICING PAGE -->
+<div id="pricing-page">
+    <section class="pricing-section" style="padding-top:200px;">
+        <p class="section-eyebrow">Simple, Transparent Pricing</p>
+        <h2 class="section-headline">Choose Your Plan</h2>
+        <p class="section-sub">All plans include full access to our bylaw database and compliance report generator.</p>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <span class="plan-badge">Starter</span><div class="plan-name">Founder</div>
+                <div class="plan-price"><sup>$</sup>0</div><div class="plan-period">Free Forever</div>
+                <ul class="plan-features"><li>3 Compliance Reports / month</li><li>2 Ontario Jurisdictions</li><li>Basic Zoning Analysis</li><li>PDF Export</li><li>Community Forum Access</li></ul>
+                <button class="plan-cta" onclick="openModal('signup-modal')">Start Free</button>
+            </div>
+            <div class="pricing-card featured">
+                <span class="plan-badge">Most Popular</span><div class="plan-name">Professional</div>
+                <div class="plan-price"><sup>$</sup>49</div><div class="plan-period">Per Month · Billed Monthly</div>
+                <ul class="plan-features"><li>Unlimited Compliance Reports</li><li>All 5 Ontario Jurisdictions</li><li>Full GIS Map Access</li><li>Document Checklist Generator</li><li>Expert Consultation (1hr/mo)</li><li>Priority Email Support</li></ul>
+                <button class="plan-cta" onclick="openModal('signup-modal')">Start 14-Day Free Trial</button>
+            </div>
+            <div class="pricing-card">
+                <span class="plan-badge">Enterprise</span><div class="plan-name">Team</div>
+                <div class="plan-price"><sup>$</sup>199</div><div class="plan-period">Per Month · Billed Annually</div>
+                <ul class="plan-features"><li>Everything in Professional</li><li>Up to 10 Team Members</li><li>API Access (REST)</li><li>Custom Bylaw Alerts</li><li>Dedicated Account Manager</li><li>White-Label PDF Reports</li></ul>
+                <button class="plan-cta" onclick="openModal('signup-modal')">Contact Sales</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h2>Permit<span style="color:var(--brand-primary);">Pal</span></h2>
+                <p>Automating municipal legal engineering for the next generation of Canadian entrepreneurs.</p>
+                <div class="newsletter-form">
+                    <input type="email" class="newsletter-input" placeholder="your@email.com" id="newsletter-email">
+                    <button class="newsletter-btn" onclick="subscribeNewsletter()">Join</button>
+                </div>
+            </div>
+            <div class="footer-col"><h4>Platform</h4><ul class="footer-list"><li onclick="showPage('bylaw')">Bylaw Engine</li><li onclick="showPage('gis')">GIS Mapping</li><li onclick="openModal('api-modal')">API Access</li></ul></div>
+            <div class="footer-col"><h4>Resources</h4><ul class="footer-list"><li onclick="openModal('guides-modal')">Legal Guides</li><li onclick="openModal('grants-modal')">Ontario Grant Database</li><li onclick="openModal('forum-modal')">Community Forum</li></ul></div>
+            <div class="footer-col"><h4>Company</h4><ul class="footer-list"><li onclick="openModal('about-modal')">About PermitPal</li><li onclick="openModal('terms-modal')">Terms of Service</li><li onclick="openModal('privacy-modal')">Privacy Vault</li></ul></div>
+        </div>
+        <div class="footer-legal"><strong>⚖️ Legal Disclaimer:</strong> The information provided on PermitPal is for general informational purposes only and does <strong>not</strong> constitute legal advice. Always consult a qualified Ontario lawyer before acting on this information. Use of this platform does not create a solicitor-client relationship.</div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 PermitPal. Built for the Hackathon.</span>
+            <div class="footer-social">
+                <div class="social-link" onclick="showToast('Follow us on X!','info')">𝕏</div>
+                <div class="social-link" onclick="showToast('Connect on LinkedIn!','info')">in</div>
+            </div>
+            <span>Waterloo | Kitchener | Toronto</span>
+        </div>
+    </div>
+</footer>
+
+<!-- MODALS -->
+<div class="modal-mask" id="coming-soon-modal"><div class="modal-surface"><button class="modal-close" onclick="closeModal('coming-soon-modal')">✕</button><div class="modal-icon">🏗️</div><h2 class="modal-title">Industry Data Under Verification</h2><p class="modal-copy">We are currently indexing the regulatory bylaws for this specific business model. Our legal database updates every 72 hours.</p><button class="action-btn btn-solid" onclick="closeModal('coming-soon-modal')">Back to PermitPal</button></div></div>
+
+<div class="modal-mask" id="login-modal"><div class="modal-surface"><button class="modal-close" onclick="closeModal('login-modal')">✕</button><div style="font-family:var(--font-serif);font-size:32px;font-weight:700;margin-bottom:8px;">Welcome Back</div><p style="color:var(--ink-secondary);font-size:15px;margin-bottom:32px;">Sign in to access your compliance reports and saved analyses.</p><div class="modal-form-group"><label>Email Address</label><input type="email" class="modal-input" placeholder="you@example.com" id="login-email"></div><div class="modal-form-group"><label>Password</label><input type="password" class="modal-input" placeholder="••••••••••" id="login-pw"></div><button class="action-btn btn-brand" style="margin-top:8px;" onclick="handleLogin()">Sign In to PermitPal</button><div class="modal-divider">or</div><button class="action-btn btn-ghost" onclick="handleLogin()">Continue with Google</button><p style="font-size:13px;color:var(--ink-ghost);margin-top:16px;">Don't have an account? <span class="modal-link" onclick="closeModal('login-modal');openModal('signup-modal')">Create one free</span></p></div></div>
+
+<div class="modal-mask" id="signup-modal"><div class="modal-surface"><button class="modal-close" onclick="closeModal('signup-modal')">✕</button><div style="font-family:var(--font-serif);font-size:32px;font-weight:700;margin-bottom:8px;">Create Your Account</div><p style="color:var(--ink-secondary);font-size:15px;margin-bottom:32px;">Start your free compliance analysis. No credit card required.</p><div class="modal-form-group"><label>Full Name</label><input type="text" class="modal-input" placeholder="Jane Smith" id="signup-name"></div><div class="modal-form-group"><label>Email Address</label><input type="email" class="modal-input" placeholder="you@example.com" id="signup-email"></div><div class="modal-form-group"><label>Password</label><input type="password" class="modal-input" placeholder="Min. 8 characters" id="signup-pw"></div><button class="action-btn btn-brand" style="margin-top:8px;" onclick="handleSignup()">Create Free Account</button><p style="font-size:13px;color:var(--ink-ghost);margin-top:16px;">Already have an account? <span class="modal-link" onclick="closeModal('signup-modal');openModal('login-modal')">Sign in</span></p></div></div>
+
+<div class="modal-mask" id="expert-modal"><div class="modal-surface" style="max-width:680px;"><button class="modal-close" onclick="closeModal('expert-modal')">✕</button><div style="font-family:var(--font-serif);font-size:32px;font-weight:700;margin-bottom:8px;">Connect with a Local Expert</div><p style="color:var(--ink-secondary);font-size:15px;margin-bottom:24px;text-align:left;">Choose a certified Ontario compliance advisor.</p><div class="expert-grid"><div class="expert-card" onclick="selectExpert(this)"><div class="expert-name">Sandra K., B.Comm</div><div class="expert-spec">MUNICIPAL · FOOD SERVICE</div><div class="expert-rating">★★★★★ (47 reviews)</div><div class="avail-badge">Available Now</div></div><div class="expert-card" onclick="selectExpert(this)"><div class="expert-name">Raj P., J.D.</div><div class="expert-spec">ZONING · COMMERCIAL LAW</div><div class="expert-rating">★★★★★ (93 reviews)</div><div class="avail-badge">Available Now</div></div><div class="expert-card" onclick="selectExpert(this)"><div class="expert-name">Mei L., CPA</div><div class="expert-spec">TAXATION · INCORPORATION</div><div class="expert-rating">★★★★☆ (28 reviews)</div><div class="avail-badge">Available in 2h</div></div><div class="expert-card" onclick="selectExpert(this)"><div class="expert-name">David O., MCIP</div><div class="expert-spec">GIS · LAND USE PLANNING</div><div class="expert-rating">★★★★★ (61 reviews)</div><div class="avail-badge">Available Now</div></div></div><button class="action-btn btn-brand" style="margin-top:8px;" onclick="bookExpert()">Book 30-Minute Consultation — $89 CAD</button><button class="action-btn btn-ghost" onclick="closeModal('expert-modal')">Maybe Later</button></div></div>
+
+<div class="modal-mask" id="share-modal"><div class="modal-surface"><button class="modal-close" onclick="closeModal('share-modal')">✕</button><div class="modal-icon">🔗</div><h2 class="modal-title">Share This Report</h2><p class="modal-copy">Copy your unique report link to share with co-founders or investors.</p><div style="display:flex;gap:8px;margin-bottom:24px;"><input type="text" class="modal-input" id="share-link" value="https://permitpal.ca/report/ON-48291" readonly style="flex:1;font-family:var(--font-mono);font-size:13px;"><button class="action-btn btn-brand" style="width:auto;padding:16px 24px;margin:0;" onclick="copyShareLink()">Copy</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><button class="action-btn btn-ghost" onclick="showToast('Shared to LinkedIn!','success');closeModal('share-modal')">Share on LinkedIn</button><button class="action-btn btn-ghost" onclick="showToast('Shared to X!','success');closeModal('share-modal')">Share on X</button></div></div></div>
+
+<div class="modal-mask" id="api-modal"><div class="modal-surface"><button class="modal-close" onclick="closeModal('api-modal')">✕</button><div class="modal-icon">⚙️</div><h2 class="modal-title">REST API Access</h2><p class="modal-copy">Integrate PermitPal directly into your platform.</p><div style="background:var(--bg-alt);border-radius:var(--radius-md);padding:20px;font-family:var(--font-mono);font-size:13px;text-align:left;margin-bottom:24px;border-left:4px solid var(--brand-primary);">GET /api/v1/compliance?city=Kitchener&amp;industry=food<br>Authorization: Bearer YOUR_API_KEY</div><button class="action-btn btn-brand" onclick="closeModal('api-modal');showPage('pricing')">View API Plans</button></div></div>
+
+<div class="modal-mask" id="guides-modal"><div class="modal-surface"><button class="modal-close" onclick="closeModal('guides-modal')">✕</button><div class="modal-icon">📖</div><h2 class="modal-title">Ontario Legal Guides</h2><p class="modal-copy">Plain-language guides covering business registration, zoning, food handler certification, fire code compliance, and more.</p><button class="action-btn btn-brand" onclick="closeModal('guides-modal');openModal('signup-modal')">Access Free Guides</button></div></div>
+
+<div class="modal-mask" id="grants-modal"><div class="modal-surface"><button class="modal-close" onclick="closeModal('grants-modal')">✕</button><div class="modal-icon">💰</div><h2 class="modal-title">Ontario Grant Database</h2><p class="modal-copy">Over 120 federal and provincial grants indexed. Filter by industry, municipality, and business stage.</p><button class="action-btn btn-brand" onclick="closeModal('grants-modal');openModal('signup-modal')">Search Grant Database</button></div></div>
+
+<div class="modal-mask" id="forum-modal"><div class="modal-surface"><button class="modal-close" onclick="closeModal('forum-modal')">✕</button><div class="modal-icon">💬</div><h2 class="modal-title">Community Forum</h2><p class="modal-copy">2,400+ Ontario entrepreneurs discussing permits, bylaws, and startup challenges.</p><button class="action-btn btn-brand" onclick="closeModal('forum-modal');openModal('signup-modal')">Join the Community</button></div></div>
+
+<div class="modal-mask" id="about-modal"><div class="modal-surface"><button class="modal-close" onclick="closeModal('about-modal')">✕</button><div class="modal-icon">🍁</div><h2 class="modal-title">About PermitPal</h2><p class="modal-copy">Built in Waterloo, ON. PermitPal was created to eliminate the information asymmetry that causes thousands of Ontario startups to fail compliance at launch.</p><button class="action-btn btn-solid" onclick="closeModal('about-modal')">Close</button></div></div>
+
+<div class="modal-mask" id="terms-modal"><div class="modal-surface"><button class="modal-close" onclick="closeModal('terms-modal')">✕</button><div class="modal-icon">⚖️</div><h2 class="modal-title">Terms of Service</h2><p class="modal-copy">PermitPal provides compliance information for educational purposes only. Always consult a qualified Ontario lawyer for binding legal guidance.</p><button class="action-btn btn-solid" onclick="closeModal('terms-modal')">I Understand</button></div></div>
+
+<div class="modal-mask" id="privacy-modal"><div class="modal-surface"><button class="modal-close" onclick="closeModal('privacy-modal')">✕</button><div class="modal-icon">🔒</div><h2 class="modal-title">Privacy Vault</h2><p class="modal-copy">We are PIPEDA compliant. Your search queries and reports are stored in encrypted Canadian data centres. We never sell your data.</p><button class="action-btn btn-solid" onclick="closeModal('privacy-modal')">Close</button></div></div>
+
+<div id="toast-container"></div>
+
+<script>
+/* ================================================================
+   REGULATORY DATA ENGINE
+   ================================================================ */
+const NEXUS_CORE = {
+    lexicon: {
+        food: ["food","cafe","restaurant","bakery","baking","cook","coffee","meal","kitchen","catering","bar","pub","juice","smoothie","diner","bistro","eatery","brewery","winery","caffe"],
+        care: ["daycare","child","kids","elderly","care","nursing","school","tutoring","teach","camp","nursery","youth","children","afterschool","preschool"],
+        wellness: ["hair","barber","nails","spa","tattoo","gym","fitness","yoga","training","grooming","pet","massage","physio","aesthetics","wax","piercing","beauty","salon"],
+        creative: ["design","agency","marketing","video","photo","studio","art","it","code","software","legal","accounting","consult","media","branding","copywriting","strategy"],
+        physical: ["shop","store","boutique","sell","clothing","items","retail","market","gallery","thrift","vintage","bookshop","hardware","flower","gifts"],
+        heavy: ["construction","renovate","trucking","shipping","factory","industrial","build","auto","repair","logistics","welding","plumbing","electrical"]
+    },
+    jurisdictions: {
+        Waterloo: { lat: 43.4668, lng: -80.5164, zoom: 14, zoning: "Waterloo Bylaw 2018-050 restricts most home occupations to 25% of the total Gross Floor Area. In the 'Uptown' core, strict heritage facade guidelines apply.", licenseFee: 285, auditFreq: "Annual", zoneLabel: "C-2 / D-1 Zone" },
+        Kitchener: { lat: 43.4516, lng: -80.4925, zoom: 14, zoning: "Kitchener Bylaw 85-1 allows flexible live-work arrangements in D-1 zones. High-traffic storefronts require dedicated commercial occupancy permits.", licenseFee: 320, auditFreq: "Bi-Annual", zoneLabel: "D-1 Live-Work Zone" },
+        Toronto: { lat: 43.6532, lng: -79.3832, zoom: 13, zoning: "Chapter 545 of the Toronto Municipal Code. Extremely high bar for body-safe PSS and daycare operations. Commercial property taxes are 3.8x residential.", licenseFee: 495, auditFreq: "Quarterly", zoneLabel: "Mixed-Use / CR Zone" },
+        Cambridge: { lat: 43.3601, lng: -80.3122, zoom: 14, zoning: "Heritage conservation districts (HCDs) apply to Galt and Preston. Fire route accessibility is a major constraint for industrial startups.", licenseFee: 260, auditFreq: "Annual", zoneLabel: "C-1 General Commercial" },
+        Guelph: { lat: 43.5448, lng: -80.2482, zoom: 14, zoning: "The City of Guelph applies Wellington-Dufferin-Guelph Public Health Unit standards for all food and PSS operations. Green building standards encouraged.", licenseFee: 295, auditFreq: "Annual", zoneLabel: "UC / DC Core Zone" }
+    },
+    sectors: {
+        food: {
+            title: "Hospitality & Food Services", risk: 92, badge: "High Regulatory Overhead",
+            timeline: [{w:"Wk 1–2",t:"Submit Plans to Health Unit",s:"Upload kitchen blueprints"},{w:"Wk 3–5",t:"Fire Suppression Install",s:"NFPA 96 compliance"},{w:"Wk 6–7",t:"Health Inspection",s:"On-site review by PHU officer"},{w:"Wk 8",t:"Licence Issued",s:"Collect municipal business licence"}],
+            checklist: [{l:"Commercial kitchen inspection passed",s:"PHU Review"},{l:"Food Handler Certificate (all supervisors)",s:"Provincial Req."},{l:"NFPA 96 hood suppression certified",s:"Fire Code"},{l:"Grease trap installed & inspected",s:"Municipal Bylaw"},{l:"Zoning clearance for food service use",s:"Planning Dept."},{l:"Liquor licence applied (if applicable)",s:"AGCO Ontario"}],
+            docs: [{icon:"🏥",name:"Food Premises Registration",src:"Region of Waterloo Public Health",status:"critical"},{icon:"🔥",name:"TSSA Fuel Safety Approval",src:"Technical Standards & Safety Authority",status:"required"},{icon:"📋",name:"Zoning Compliance Certificate",src:"City Planning Department",status:"required"},{icon:"🍺",name:"AGCO Liquor Sales Licence",src:"Alcohol & Gaming Commission of Ontario",status:"optional"}],
+            steps: [{p:"Phase 1",t:"Public Health Plan Review",d:"Submission of kitchen blueprints and full equipment specifications to the Regional Public Health Unit. Includes refrigeration layout, food prep surfaces, handwashing sink placement, and ventilation plans."},{p:"Phase 2",t:"Fire Suppression Audit",d:"Mandatory NFPA 96 compliance for all commercial hood systems. A licensed contractor must certify the suppression system before the health inspection date."},{p:"Phase 3",t:"Safe Food Handler Certification",d:"At least one supervisor per shift must hold a valid provincial Food Handler certificate."},{p:"Phase 4",t:"Municipal Licensing Final Inspection",d:"Final on-site inspection by Bylaw Enforcement officers. A passed inspection triggers licence issuance within 5 business days."}],
+            fees: [{n:"Health Unit Permit",v:215},{n:"Fire Inspection Fee",v:140},{n:"Grease Trap Levy",v:85}]
+        },
+        care: {
+            title: "Care & Educational Services", risk: 85, badge: "Strict Social Compliance",
+            timeline: [{w:"Wk 1–3",t:"Police Clearance for All Staff",s:"RCMP vulnerable sector check"},{w:"Wk 4–6",t:"Ministry Licensing Application",s:"CCEYA filing"},{w:"Wk 7–10",t:"Facility Inspection",s:"Space ratio & safety review"},{w:"Wk 11–12",t:"Provincial Licence Issued",s:"Post licence visibly"}],
+            checklist: [{l:"RCMP Vulnerable Sector Check (all staff)",s:"Mandatory"},{l:"CCEYA Childcare Licence applied",s:"Ministry of Edu."},{l:"Zoning clearance for care use",s:"City Planning"},{l:"First Aid & CPR certified (staff)",s:"Heart & Stroke"},{l:"Emergency evacuation plan filed",s:"Fire Marshal"}],
+            docs: [{icon:"🔒",name:"RCMP Vulnerable Sector Clearance",src:"Royal Canadian Mounted Police",status:"critical"},{icon:"📜",name:"CCEYA Licence Application",src:"Ministry of Education Ontario",status:"critical"},{icon:"🏛️",name:"Zoning Compliance Certificate",src:"City Planning Department",status:"required"},{icon:"🚑",name:"Standard First Aid Certificate",src:"St. John Ambulance / Red Cross",status:"required"}],
+            steps: [{p:"Phase 1",t:"Vulnerable Sector Check",d:"All staff must receive RCMP and local police background screening before any children are present on-site."},{p:"Phase 2",t:"Ministry Licensing (CCEYA)",d:"The Child Care and Early Years Act governs all licensed childcare in Ontario. Applications are submitted through ServiceOntario."},{p:"Phase 3",t:"Zoning Clearance",d:"The parcel must be zoned to permit non-residential care activity."}],
+            fees: [{n:"Police Screening (per person)",v:65},{n:"Provincial Application Fee",v:110},{n:"Facility Safety Inspection",v:175}]
+        },
+        wellness: {
+            title: "Personal Service Settings (PSS)", risk: 68, badge: "Health Unit Oversight",
+            timeline: [{w:"Wk 1",t:"14-Day PHU Advance Notice",s:"Notify Public Health Unit"},{w:"Wk 2–3",t:"Sterilization Protocol Setup",s:"Autoclave or high-level disinfectant"},{w:"Wk 3–4",t:"Initial PHU Inspection",s:"Officer reviews facility"},{w:"Wk 4–5",t:"Licence Issued",s:"Begin operations"}],
+            checklist: [{l:"14-day PHU advance notice filed",s:"Public Health"},{l:"Autoclave or disinfectant protocol certified",s:"Sterilization"},{l:"PSS-specific hand hygiene station installed",s:"Facility Req."},{l:"Single-use needle policy documented",s:"PHU Standard"}],
+            docs: [{icon:"🏥",name:"PSS Opening Notification",src:"Region of Waterloo Public Health",status:"required"},{icon:"🧪",name:"Sterilization Protocol Documentation",src:"Public Health Inspections",status:"required"},{icon:"📋",name:"Zoning Compliance Certificate",src:"City Planning Department",status:"required"}],
+            steps: [{p:"Phase 1",t:"BodySafe Advance Notification",d:"Ontario Regulation 136/18 requires a minimum 14-day advance notice to the local Public Health Unit before opening any Personal Service Setting."},{p:"Phase 2",t:"Sterilization Protocol Audit",d:"Verification of an approved sterilization method: Class B or S autoclave, or validated high-level chemical disinfection."}],
+            fees: [{n:"Public Health Audit Fee",v:150},{n:"Sterilization Certification",v:95}]
+        },
+        creative: {
+            title: "Professional & Creative Services", risk: 12, badge: "Low Impact / Low Friction",
+            timeline: [{w:"Wk 1",t:"Register Trade Name",s:"ServiceOntario online"},{w:"Wk 1–2",t:"CRA Business Number",s:"GST/HST account setup"},{w:"Wk 2",t:"Municipal Licence (if needed)",s:"Check local bylaw"},{w:"Wk 2–3",t:"Open for Business",s:"Congratulations!"}],
+            checklist: [{l:"Trade name registered with ServiceOntario",s:"Business Reg."},{l:"CRA Business Number obtained",s:"Canada Revenue"},{l:"HST account registered (if >$30k)",s:"CRA"},{l:"Professional liability insurance secured",s:"Recommended"}],
+            docs: [{icon:"📝",name:"Master Business Licence (MBL)",src:"ServiceOntario",status:"required"},{icon:"🇨🇦",name:"CRA Business Number Registration",src:"Canada Revenue Agency",status:"required"},{icon:"🛡️",name:"Professional Liability Insurance",src:"Licensed Insurance Broker",status:"optional"}],
+            steps: [{p:"Phase 1",t:"Trade Name Registration",d:"Register your business operating name with ServiceOntario via the Ontario Business Registry. The Master Business Licence is $60 and valid for 5 years."},{p:"Phase 2",t:"CRA Business Number & Accounts",d:"Apply online at CRA My Business Account for your corporate tax account, payroll deductions account, and HST/GST remittance account."}],
+            fees: [{n:"Master Business Licence",v:60}]
+        },
+        physical: {
+            title: "Retail & Commerce", risk: 45, badge: "Zoning Restricted",
+            timeline: [{w:"Wk 1–2",t:"Confirm Zoning Classification",s:"Check municipal zoning map"},{w:"Wk 2–4",t:"Occupancy Permit Application",s:"Building department filing"},{w:"Wk 4–6",t:"Signage Permit",s:"Bylaw approval for exterior"},{w:"Wk 6–8",t:"Licence Issued",s:"Open your doors!"}],
+            checklist: [{l:"Zoning confirmed for retail commercial use",s:"Planning Dept."},{l:"Occupancy permit obtained",s:"Building Dept."},{l:"Signage permit approved",s:"Bylaw Enforcement"},{l:"Accessible entrance confirmed (AODA)",s:"Accessibility"},{l:"Retail business licence issued",s:"Municipal"}],
+            docs: [{icon:"🏗️",name:"Occupancy Permit / Change of Use",src:"City Building Department",status:"critical"},{icon:"🪧",name:"Signage & Awning Permit",src:"Bylaw Enforcement Division",status:"required"},{icon:"♿",name:"AODA Accessibility Compliance Form",src:"Province of Ontario",status:"required"},{icon:"🔥",name:"Fire Safety Plan",src:"Ontario Fire Marshal",status:"required"}],
+            steps: [{p:"Phase 1",t:"Occupancy Permit & Zoning",d:"Verify the commercial unit is zoned for retail use. If the previous tenant used it for a different permitted use, a Change of Use permit must be filed."},{p:"Phase 2",t:"Exterior Signage Permit",d:"Any signage affixed to the exterior of a building requires advance bylaw approval. Permit fees are typically calculated per square metre of sign area."}],
+            fees: [{n:"Signage & Awning Permit",v:120},{n:"Occupancy Audit Fee",v:200},{n:"Change of Use Filing",v:95}]
+        }
+    },
+    bylaw_db: [
+        {num:"BY-2018-050",city:"Waterloo",title:"Home Occupation and Live-Work Bylaw",excerpt:"Regulates the scale and nature of home-based businesses within residential zones. Limits occupation to 25% of gross floor area and prohibits client-facing storefronts in residential parcels.",tags:["home-based","residential","zoning"]},
+        {num:"BY-85-1",city:"Kitchener",title:"Zoning Bylaw — Commercial and Industrial Districts",excerpt:"Comprehensive zoning provisions for Kitchener's commercial corridors and D-1 Live-Work districts.",tags:["commercial","d-1","kitchener"]},
+        {num:"CHAPTER 545",city:"Toronto",title:"Municipal Code — Licensing of Businesses",excerpt:"The master licensing framework for all Toronto businesses. Establishes inspection regimes, fee schedules, and renewal processes.",tags:["toronto","licensing","pss"]},
+        {num:"BY-2022-017",city:"Cambridge",title:"Heritage Conservation Districts — Galt and Preston",excerpt:"Establishes heritage overlay zones for the historic Galt and Preston cores. Requires Heritage Impact Assessments for exterior modifications.",tags:["heritage","hcd","cambridge"]},
+        {num:"REG-136/18",city:"Ontario (Provincial)",title:"Personal Service Settings — Ontario Regulation 136/18",excerpt:"Provincial regulation governing all personal service settings. Mandates 14-day advance notice, sterilization protocols, and operator training.",tags:["pss","provincial","health"]},
+        {num:"CCEYA-2014",city:"Ontario (Provincial)",title:"Child Care and Early Years Act — Licensing Provisions",excerpt:"Establishes comprehensive licensing requirements for childcare centres and home daycare operations.",tags:["childcare","licensing","provincial"]},
+        {num:"NFPA-96",city:"National (Adopted ON)",title:"Standard for Ventilation Control and Fire Protection of Commercial Cooking Operations",excerpt:"Adopted as a reference standard across Ontario municipalities. Requires certified suppression systems under all commercial cooking hoods.",tags:["food","fire","safety"]},
+        {num:"BY-2019-084",city:"Waterloo",title:"Outdoor Patio and Sidewalk Café Licensing",excerpt:"Establishes permit requirements for outdoor dining areas in the Uptown and University districts.",tags:["food","patio","waterloo"]}
+    ]
+};
+
+/* ================================================================
+   JURISDICTION MAP CONFIG
+   ================================================================ */
+const CITY_MAPS = {
+    'map-waterloo': { lat: 43.4668, lng: -80.5164, zoom: 14, name: 'Waterloo' },
+    'map-kitchener': { lat: 43.4516, lng: -80.4925, zoom: 14, name: 'Kitchener' },
+    'map-cambridge': { lat: 43.3601, lng: -80.3122, zoom: 14, name: 'Cambridge' },
+    'map-toronto': { lat: 43.6532, lng: -79.3832, zoom: 13, name: 'Toronto' },
+    'map-guelph': { lat: 43.5448, lng: -80.2482, zoom: 14, name: 'Guelph' }
+};
+
+const jMapsInitialized = {};
+
+/* Custom red pin icon */
+function createPinIcon() {
+    return L.divIcon({
+        html: `<div style="width:20px;height:20px;background:#e11d48;border:3px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>`,
+        className: '', iconSize: [20, 20], iconAnchor: [10, 20]
+    });
+}
+
+function initJurisdictionMap(mapId) {
+    if (jMapsInitialized[mapId]) return;
+    const cfg = CITY_MAPS[mapId];
+    if (!cfg) return;
+    const el = document.getElementById(mapId);
+    if (!el || el.offsetWidth === 0) return;
+
+    jMapsInitialized[mapId] = true;
+
+    const map = L.map(mapId, {
+        center: [cfg.lat, cfg.lng],
+        zoom: cfg.zoom,
+        zoomControl: true,
+        scrollWheelZoom: false,
+        dragging: true,
+        attributionControl: false
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 19
+    }).addTo(map);
+
+    // Add city center marker with pulse animation
+    const marker = L.marker([cfg.lat, cfg.lng], { icon: createPinIcon() }).addTo(map);
+    marker.bindPopup(`<strong style="font-family:'Manrope',sans-serif;">${cfg.name}</strong><br><span style="font-size:11px;color:#94a3b8;font-family:'DM Mono',monospace;">Click to run compliance check</span>`);
+
+    // Add a subtle zone circle
+    L.circle([cfg.lat, cfg.lng], {
+        radius: 600,
+        color: '#e11d48',
+        fillColor: '#e11d48',
+        fillOpacity: 0.06,
+        weight: 2,
+        dashArray: '6 4'
+    }).addTo(map);
+
+    // Invalidate size after init to fix blank tiles
+    setTimeout(() => map.invalidateSize(), 100);
+    return map;
+}
+
+/* ================================================================
+   JURISDICTION TAB SWITCHER WITH ANIMATION
+   ================================================================ */
+let currentPanel = 'j-waterloo';
+
+function switchJTab(el, panelId) {
+    if (panelId === currentPanel) return;
+
+    const oldPanel = document.getElementById(currentPanel);
+    const newPanel = document.getElementById(panelId);
+
+    // Animate out old panel
+    oldPanel.style.opacity = '0';
+    oldPanel.style.transform = 'translateX(-40px)';
+    oldPanel.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+
+    setTimeout(() => {
+        oldPanel.style.display = 'none';
+        oldPanel.style.opacity = '';
+        oldPanel.style.transform = '';
+        oldPanel.style.transition = '';
+        oldPanel.classList.remove('active');
+
+        // Animate in new panel
+        newPanel.style.display = 'grid';
+        newPanel.style.opacity = '0';
+        newPanel.style.transform = 'translateX(40px)';
+        newPanel.style.transition = 'opacity 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1)';
+        newPanel.classList.add('active');
+
+        requestAnimationFrame(() => {
+            newPanel.style.opacity = '1';
+            newPanel.style.transform = 'translateX(0)';
+        });
+
+        // Init Leaflet map for this city if not done yet
+        const mapId = 'map-' + panelId.replace('j-', '');
+        setTimeout(() => initJurisdictionMap(mapId), 100);
+
+        currentPanel = panelId;
+    }, 300);
+
+    // Update tab styles
+    document.querySelectorAll('.j-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+}
+
+/* ================================================================
+   GIS PAGE — LEAFLET MAP (NO BLOCKED AREAS)
+   ================================================================ */
+let gisMap = null;
+let gisLayers = {};
+let visibleTypes = { commercial: true, residential: true, industrial: true, mixed: true, heritage: true };
+
+const ZONE_DATA = {
+    Kitchener: [
+        { type: 'commercial',   color: '#e11d48', name: 'C-2 General Commercial',    desc: 'Permits retail, food service, personal service, and office uses. Maximum building height 15m. Front yard setback 0–3m in commercial corridors.', bounds: [[43.454,  -80.499], [43.458, -80.493]] },
+        { type: 'mixed',        color: '#f59e0b', name: 'MU-1 Mixed Use Corridor',    desc: 'Encourages a mix of residential and commercial uses along transit corridors. Ground floor commercial preferred. Maximum FAR: 2.5.', bounds: [[43.450,  -80.492], [43.454, -80.485]] },
+        { type: 'residential',  color: '#3b82f6', name: 'R-3 Medium Density Residential', desc: 'Permits residential uses from single detached to low-rise apartment (max 3 storeys). Home occupations allowed with restrictions.', bounds: [[43.446,  -80.502], [43.450, -80.495]] },
+        { type: 'industrial',   color: '#10b981', name: 'M-2 Light Industrial',       desc: 'Permits manufacturing, warehousing, workshop, and service industrial uses. Retail showrooms permitted as secondary use (max 20% GFA).', bounds: [[43.447,  -80.484], [43.452, -80.477]] },
+        { type: 'heritage',     color: '#8b5cf6', name: 'HCD Heritage Conservation District', desc: 'All exterior modifications require a Heritage Impact Assessment (HIA). New signage must comply with heritage-sensitive design guidelines.', bounds: [[43.455,  -80.490], [43.459, -80.484]] },
+        { type: 'commercial',   color: '#e11d48', name: 'C-4 Service Commercial',     desc: 'Permits automotive service, drive-through retail, gas stations, and large-format retail. Significant parking minimums apply (4 spaces per 100m²).', bounds: [[43.442,  -80.498], [43.446, -80.491]] }
+    ],
+    Waterloo: [
+        { type: 'commercial',   color: '#e11d48', name: 'C-1 Core Commercial',        desc: 'Uptown Waterloo core commercial zone. High-density mixed use permitted. Heritage facade guidelines apply to contributing buildings.', bounds: [[43.468,  -80.521], [43.472, -80.515]] },
+        { type: 'mixed',        color: '#f59e0b', name: 'MU-2 Innovation Corridor',   desc: 'University/Research park zone encouraging tech and innovation businesses. Reduced parking requirements for transit-served sites.', bounds: [[43.464,  -80.518], [43.468, -80.512]] },
+        { type: 'residential',  color: '#3b82f6', name: 'R-4 High Density Residential', desc: 'Apartment towers and mid-rise residential. Home occupation limited to 25% GFA. No signage permitted.', bounds: [[43.462,  -80.525], [43.466, -80.519]] },
+        { type: 'heritage',     color: '#8b5cf6', name: 'Uptown Heritage District',   desc: 'Uptown core heritage overlay. Streetscape preservation requirements. New construction must respect heritage character area guidelines.', bounds: [[43.470,  -80.519], [43.474, -80.513]] }
+    ],
+    Cambridge: [
+        { type: 'commercial',   color: '#e11d48', name: 'C-1 General Commercial',     desc: 'Main commercial zone in Cambridge. Lower tax rate than Kitchener/Waterloo. Good access to Highway 401 corridor.', bounds: [[43.362,  -80.318], [43.366, -80.312]] },
+        { type: 'heritage',     color: '#8b5cf6', name: 'Galt HCD',                   desc: 'Galt Heritage Conservation District. All exterior modifications require Heritage Impact Assessment. Victorian-era streetscape preservation mandatory.', bounds: [[43.358,  -80.315], [43.362, -80.309]] },
+        { type: 'industrial',   color: '#10b981', name: 'M-1 General Industrial',     desc: 'Industrial zone with fire route accessibility requirements. Suitable for manufacturing, distribution, and light industry operations.', bounds: [[43.365,  -80.322], [43.369, -80.316]] },
+        { type: 'mixed',        color: '#f59e0b', name: 'Preston Mixed Use',          desc: 'Preston HCD mixed use area. Commercial ground floor with residential above. Heritage conservation guidelines apply.', bounds: [[43.356,  -80.320], [43.360, -80.314]] }
+    ],
+    Toronto: [
+        { type: 'commercial',   color: '#e11d48', name: 'CR Mixed Use — King West',   desc: 'Chapter 545 Toronto licensing applies. Commercial residential zone along King Street West. BIA membership mandatory. High-density permitted to 30+ storeys.', bounds: [[43.644,  -79.400], [43.649, -79.392]] },
+        { type: 'mixed',        color: '#f59e0b', name: 'MU Downtown Core',           desc: 'Toronto\'s highest-intensity zone. Virtually all uses permitted. Heritage designations apply to 35,000+ properties citywide.', bounds: [[43.650,  -79.388], [43.655, -79.380]] },
+        { type: 'residential',  color: '#3b82f6', name: 'R2 Residential',             desc: 'Low-density residential. Commercial activity strictly limited. Home occupation requires separate licensing under Chapter 545.', bounds: [[43.658,  -79.394], [43.662, -79.386]] },
+        { type: 'industrial',   color: '#10b981', name: 'Employment District',        desc: 'Protected employment zone. City policy discourages residential conversion. Manufacturing and logistics preferred uses.', bounds: [[43.638,  -79.396], [43.642, -79.388]] },
+        { type: 'heritage',     color: '#8b5cf6', name: 'Heritage Conservation District', desc: 'Toronto Heritage Register includes 35,000+ properties. Alteration permits required. Quarterly inspections for licensed businesses.', bounds: [[43.647,  -79.376], [43.651, -79.368]] }
+    ],
+    Guelph: [
+        { type: 'commercial',   color: '#e11d48', name: 'UC Urban Core',              desc: 'Guelph downtown core urban commercial zone. LEED construction encouraged. Wellington-Dufferin-Guelph PHU standards for food/PSS.', bounds: [[43.547,  -80.253], [43.551, -80.246]] },
+        { type: 'mixed',        color: '#f59e0b', name: 'DC Downtown Corridor',       desc: 'Mixed use corridor along Stone Road and Speedvale. Transit-oriented development preferred. Green building standards apply.', bounds: [[43.543,  -80.259], [43.547, -80.252]] },
+        { type: 'residential',  color: '#3b82f6', name: 'R1B Low Density',            desc: 'Low density residential. Strict noise and light pollution bylaws. Home occupation permitted to 25% of GFA.', bounds: [[43.551,  -80.257], [43.555, -80.250]] },
+        { type: 'industrial',   color: '#10b981', name: 'B.1 Business Park',          desc: 'Guelph innovation and business park zone. LEED Silver encouraged for new construction. Clean industry preferred.', bounds: [[43.539,  -80.249], [43.543, -80.242]] }
+    ]
+};
+
+function initGISMap() {
+    if (gisMap) return;
+
+    gisMap = L.map('gis-leaflet-map', {
+        center: [43.4516, -80.4925],
+        zoom: 13,
+        zoomControl: true,
+        attributionControl: true
+    });
+
+    // OpenStreetMap tiles — fully open, no access restrictions
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(gisMap);
+
+    gisLayers = {};
+    loadGISCity('Kitchener');
+
+    setTimeout(() => gisMap.invalidateSize(), 200);
+}
+
+function loadGISCity(cityName) {
+    // Remove all existing layers
+    Object.values(gisLayers).forEach(layerGroup => {
+        layerGroup.forEach(l => gisMap.removeLayer(l));
+    });
+    gisLayers = {};
+
+    const zones = ZONE_DATA[cityName] || [];
+
+    zones.forEach(zone => {
+        if (!gisLayers[zone.type]) gisLayers[zone.type] = [];
+
+        const rect = L.rectangle(zone.bounds, {
+            color: zone.color,
+            weight: 2,
+            opacity: 0.9,
+            fillColor: zone.color,
+            fillOpacity: 0.22,
+            dashArray: zone.type === 'heritage' ? '6 4' : null
+        });
+
+        // Label via tooltip
+        rect.bindTooltip(`<span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:800;color:${zone.color};">${zone.name}</span>`, {
+            permanent: true, direction: 'center', className: 'zone-label-tooltip', opacity: 0.95
+        });
+
+        // Popup on click — fully clickable, no blocked areas
+        rect.on('click', function(e) {
+            L.popup({ maxWidth: 300 })
+                .setLatLng(e.latlng)
+                .setContent(`
+                    <div class="zone-popup">
+                        <div class="zone-popup-label">Zone Details · ${cityName}</div>
+                        <div class="zone-popup-name">${zone.name}</div>
+                        <div class="zone-popup-desc">${zone.desc}</div>
+                        <button class="zone-popup-btn" onclick="this.closest('.leaflet-popup').querySelector('a').click();showPage('home');showToast('Zone pre-loaded. Enter your business description to analyze.','info');">Run Compliance Check →</button>
+                    </div>
+                `)
+                .openOn(gisMap);
+        });
+
+        rect.on('mouseover', function() {
+            this.setStyle({ fillOpacity: 0.4, weight: 3 });
+        });
+        rect.on('mouseout', function() {
+            this.setStyle({ fillOpacity: 0.22, weight: 2 });
+        });
+
+        if (visibleTypes[zone.type]) {
+            rect.addTo(gisMap);
+        }
+
+        gisLayers[zone.type].push(rect);
+    });
+
+    updateParcelCount();
+}
+
+function gisSetCity(el, cityName, latLng, zoom) {
+    document.querySelectorAll('.gis-sidebar .gis-filter-option').forEach(o => {
+        if (!o.id || !o.id.startsWith('filter-')) o.classList.remove('active');
+    });
+    // Only city options (first group)
+    el.classList.add('active');
+
+    if (gisMap) {
+        gisMap.flyTo(latLng, zoom, { duration: 1.5 });
+        setTimeout(() => loadGISCity(cityName), 400);
+    }
+    showToast(`Switched to ${cityName} zoning data.`, 'info');
+}
+
+function gisToggleFilter(el, type) {
+    el.classList.toggle('active');
+    visibleTypes[type] = el.classList.contains('active');
+
+    if (gisLayers[type]) {
+        gisLayers[type].forEach(layer => {
+            if (visibleTypes[type]) {
+                layer.addTo(gisMap);
+            } else {
+                gisMap.removeLayer(layer);
+            }
+        });
+    }
+    updateParcelCount();
+}
+
+function updateParcelCount() {
+    let count = 0;
+    Object.keys(visibleTypes).forEach(type => {
+        if (visibleTypes[type] && gisLayers[type]) count += gisLayers[type].length;
+    });
+    document.getElementById('gis-parcel-count').innerText = count * 47;
+}
+
+// Custom tooltip style for zone labels
+const styleTag = document.createElement('style');
+styleTag.innerHTML = `
+    .zone-label-tooltip { background: rgba(255,255,255,0.92); border: none; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); padding: 4px 8px; font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700; white-space: nowrap; pointer-events: none; }
+    .zone-label-tooltip::before { display: none; }
+`;
+document.head.appendChild(styleTag);
+
+/* ================================================================
+   DISCLAIMER BANNER
+   ================================================================ */
+function dismissBanner() {
+    const banner = document.getElementById('legal-banner');
+    banner.style.transition = 'opacity 0.3s ease';
+    banner.style.opacity = '0';
+    setTimeout(() => { banner.style.display = 'none'; document.getElementById('header').style.top = '0'; }, 300);
+}
+
+/* ================================================================
+   PAGE ROUTING
+   ================================================================ */
+function showPage(page) {
+    ['home-page','bylaw-page','gis-page','pricing-page'].forEach(p => document.getElementById(p).style.display = 'none');
+
+    if (page === 'home') {
+        document.getElementById('home-page').style.display = 'block';
+    } else if (page === 'bylaw') {
+        document.getElementById('bylaw-page').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (page === 'gis') {
+        document.getElementById('gis-page').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(initGISMap, 300);
+    } else if (page === 'pricing') {
+        document.getElementById('pricing-page').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (page === 'jurisdictions') {
+        document.getElementById('home-page').style.display = 'block';
+        setTimeout(() => document.getElementById('jurisdictions-section').scrollIntoView({ behavior: 'smooth' }), 100);
+    }
+}
+
+/* ================================================================
+   MODAL SYSTEM
+   ================================================================ */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-mask').forEach(mask => {
+    mask.addEventListener('click', function(e) { if (e.target === this) closeModal(this.id); });
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-mask.open').forEach(m => m.classList.remove('open')); });
+
+/* ================================================================
+   TOAST
+   ================================================================ */
+function showToast(msg, type = '') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.innerHTML = `<span style="font-size:18px;">${type==='success'?'✓':type==='info'?'ℹ':'→'}</span> ${msg}`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.style.animation = 'toastOut 0.4s ease-in forwards'; setTimeout(() => toast.remove(), 400); }, 3500);
+}
+
+/* ================================================================
+   ANALYSIS ENGINE
+   ================================================================ */
+let reportMiniMap = null;
+
+async function executeNexusAnalysis() {
+    const query = document.getElementById('query-input').value.toLowerCase().trim();
+    const city = document.getElementById('param-city').value;
+    const struct = document.getElementById('param-structure').value;
+    const traffic = document.getElementById('param-traffic').value;
+
+    if (query.length < 3) { showToast('Please enter a business description first.', ''); return; }
+
+    let industryKey = null;
+    for (let key in NEXUS_CORE.lexicon) {
+        if (NEXUS_CORE.lexicon[key].some(k => query.includes(k))) { industryKey = key; break; }
+    }
+    if (!industryKey || industryKey === 'heavy') { openModal('coming-soon-modal'); return; }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    ['report-nexus','how-section','jurisdictions-section'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
+    document.querySelectorAll('.testimonials-section,.trust-bar,.hero-section,.config-grid').forEach(el => el.style.display = 'none');
+
+    const loader = document.getElementById('analysis-loader');
+    loader.style.display = 'block';
+
+    const steps = ["Mapping Land Use Parcels...","Scraping Ontario Bylaw Registry...","Calculating Regional Surcharges...","Cross-Referencing Sector Codes...","Building Compliance Roadmap...","Finalizing Report..."];
+    const subs = ["ZONING DB v.2026","QUEENS PARK DATA",city.toUpperCase()+" AUDIT","SECTOR MATRIX","ROADMAP ENGINE","REPORT GENERATOR"];
+    const delays = [900,1100,700,800,600,500];
+    const stepList = document.getElementById('loader-step-list');
+    stepList.innerHTML = steps.map(s => `<div class="loader-step"><div class="step-dot"></div>${s}</div>`).join('');
+
+    for (let i = 0; i < steps.length; i++) {
+        document.getElementById('load-status').innerText = steps[i];
+        document.getElementById('load-sub').innerText = subs[i];
+        stepList.children[i].classList.add('done');
+        await sleep(delays[i]);
+    }
+
+    loader.style.display = 'none';
+    renderReport(industryKey, city, struct, traffic);
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function renderReport(key, city, struct, traffic) {
+    const data = NEXUS_CORE.sectors[key];
+    const cityData = NEXUS_CORE.jurisdictions[city] || NEXUS_CORE.jurisdictions['Waterloo'];
+    const nexus = document.getElementById('report-nexus');
+
+    nexus.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    document.getElementById('r-ref-id').innerText = `PermitPal Report ID: ON-${Math.floor(Math.random()*90000)+10000} · ${city.toUpperCase()} JURISDICTION`;
+    document.getElementById('r-timestamp').innerText = `GEN DATE: ${new Date().toLocaleString()} · Regulatory Data Current as of 2026`;
+    document.getElementById('r-title').innerText = `${data.title} — ${city}, ON`;
+
+    const badge = document.getElementById('r-status-badge');
+    if (data.risk > 80) badge.innerHTML = `<span class="status-badge red">Manual Review Required</span>`;
+    else if (data.risk > 50) badge.innerHTML = `<span class="status-badge amber">Moderate Compliance Overhead</span>`;
+    else badge.innerHTML = `<span class="status-badge green">Compliant with Bylaws</span>`;
+
+    document.getElementById('r-zoning-text').innerText = `${cityData.zoning} Regulatory Classification: ${data.badge}.`;
+
+    let finalRisk = data.risk;
+    if (traffic === 'Retail') finalRisk += 5;
+    if (struct === 'Corp') finalRisk += 5;
+    if (traffic === 'Industrial') finalRisk += 8;
+    if (city === 'Toronto') finalRisk += 8;
+    if (finalRisk > 100) finalRisk = 100;
+
+    document.getElementById('r-risk-value').innerText = finalRisk + "%";
+    document.getElementById('r-risk-desc').innerText = `Your complexity score is ${finalRisk}/100 based on ${city}'s ${cityData.auditFreq.toLowerCase()} audit frequency, your ${struct} entity structure, and a ${traffic.toLowerCase()} footprint.`;
+    setTimeout(() => {
+        const fill = document.getElementById('r-risk-bar');
+        fill.style.width = finalRisk + "%";
+        fill.style.background = finalRisk > 75 ? 'var(--status-error)' : finalRisk > 40 ? 'var(--status-warning)' : 'var(--status-success)';
+    }, 200);
+
+    document.getElementById('r-checklist').innerHTML = (data.checklist||[]).map(c => `<div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div><div class="check-label">${c.l}</div><div class="check-sub">${c.s}</div></div></div>`).join('');
+    document.getElementById('r-doc-list').innerHTML = (data.docs||[]).map(d => `<div class="doc-item"><div class="doc-icon">${d.icon}</div><div class="doc-info"><div class="doc-name">${d.name}</div><div class="doc-source">${d.src}</div></div><span class="doc-status ${d.status}">${d.status}</span></div>`).join('');
+    document.getElementById('r-roadmap').innerHTML = data.steps.map(s => `<div class="roadmap-item"><div class="roadmap-dot"></div><span class="roadmap-phase">${s.p}</span><h4 class="roadmap-title">${s.t}</h4><p class="roadmap-text">${s.d}</p></div>`).join('');
+
+    let total = cityData.licenseFee;
+    let feeHtml = `<div class="fee-row"><span>Municipal Base Licence</span><span>$${total}.00</span></div>`;
+    data.fees.forEach(f => { feeHtml += `<div class="fee-row"><span>${f.n}</span><span>$${f.v}.00</span></div>`; total += f.v; });
+    if (struct === 'Corp') { feeHtml += `<div class="fee-row"><span>Federal Incorporation Filing</span><span>$350.00</span></div>`; total += 350; }
+    if (struct === 'NonProfit') { feeHtml += `<div class="fee-row"><span>Non-Profit Letters Patent</span><span>$155.00</span></div>`; total += 155; }
+    if (traffic === 'Industrial') { feeHtml += `<div class="fee-row"><span>Industrial Zone Permit</span><span>$220.00</span></div>`; total += 220; }
+    document.getElementById('r-fees-list').innerHTML = feeHtml;
+    document.getElementById('r-grand-total').innerText = `Total: $${total.toLocaleString()}.00 CAD`;
+    document.getElementById('r-timeline').innerHTML = (data.timeline||[]).map(t => `<div class="timeline-week"><div class="week-label">${t.w}</div><div><div class="week-task">${t.t}</div><div class="week-sub">${t.s}</div></div></div>`).join('');
+
+    // Render mini Leaflet map in report section 01
+    setTimeout(() => {
+        const miniEl = document.getElementById('report-mini-map');
+        if (!miniEl) return;
+        miniEl.style.height = '260px';
+        if (reportMiniMap) { reportMiniMap.remove(); reportMiniMap = null; }
+        reportMiniMap = L.map('report-mini-map', { center: [cityData.lat, cityData.lng], zoom: 14, zoomControl: false, scrollWheelZoom: false, attributionControl: false });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(reportMiniMap);
+        L.circle([cityData.lat, cityData.lng], { radius: 500, color: '#e11d48', fillColor: '#e11d48', fillOpacity: 0.1, weight: 2, dashArray: '6 4' }).addTo(reportMiniMap);
+        L.marker([cityData.lat, cityData.lng], { icon: createPinIcon() }).addTo(reportMiniMap).bindTooltip(cityData.zoneLabel, { permanent: true, direction: 'top', className: 'zone-label-tooltip' });
+        setTimeout(() => reportMiniMap.invalidateSize(), 100);
+    }, 300);
+
+    showToast(`Report generated for ${city}. Complexity: ${finalRisk}%`, finalRisk > 75 ? '' : 'success');
+}
+
+function toggleCheck(el) {
+    el.classList.toggle('checked');
+    const checked = document.querySelectorAll('.check-item.checked').length;
+    const total = document.querySelectorAll('.check-item').length;
+    if (checked === total) showToast('All pre-checks complete! Your business is ready to launch.', 'success');
+}
+
+/* ================================================================
+   BYLAW SEARCH
+   ================================================================ */
+function searchBylaws() {
+    const q = document.getElementById('bylaw-query').value.toLowerCase().trim();
+    if (q.length < 2) return;
+    const results = NEXUS_CORE.bylaw_db.filter(b =>
+        b.title.toLowerCase().includes(q) || b.excerpt.toLowerCase().includes(q) ||
+        b.tags.some(t => t.includes(q)) || b.num.toLowerCase().includes(q) || b.city.toLowerCase().includes(q)
+    );
+    const container = document.getElementById('bylaw-results');
+    if (results.length === 0) {
+        container.innerHTML = `<div style="text-align:center;padding:60px;color:var(--ink-ghost);"><div style="font-size:48px;margin-bottom:16px;">🔍</div><p style="font-family:var(--font-mono);text-transform:uppercase;letter-spacing:2px;font-size:13px;">No bylaws found for "${q}".</p></div>`;
+        return;
+    }
+    container.innerHTML = results.map(b => `<div class="bylaw-card" onclick="showToast('Viewing Bylaw ${b.num} — Full text available in Professional plan.','info')"><div class="bylaw-num">${b.num} · ${b.city}</div><div class="bylaw-title">${b.title}</div><div class="bylaw-excerpt">${b.excerpt}</div><div class="bylaw-tags">${b.tags.map(t=>`<span class="bylaw-tag">${t}</span>`).join('')}</div></div>`).join('');
+    showToast(`${results.length} bylaw${results.length > 1 ? 's' : ''} found.`, 'success');
+}
+
+/* ================================================================
+   AUTH
+   ================================================================ */
+function handleLogin() {
+    const email = document.getElementById('login-email')?.value;
+    if (!email || !email.includes('@')) { showToast('Please enter a valid email address.', ''); return; }
+    closeModal('login-modal');
+    showToast(`Welcome back! Logged in as ${email}`, 'success');
+}
+function handleSignup() {
+    const name = document.getElementById('signup-name')?.value;
+    const email = document.getElementById('signup-email')?.value;
+    const pw = document.getElementById('signup-pw')?.value;
+    if (!name || !email || !pw) { showToast('Please fill in all fields.', ''); return; }
+    if (!email.includes('@')) { showToast('Please enter a valid email.', ''); return; }
+    if (pw.length < 8) { showToast('Password must be at least 8 characters.', ''); return; }
+    closeModal('signup-modal');
+    showToast(`Welcome to PermitPal, ${name}! Your free account is active.`, 'success');
+}
+function subscribeNewsletter() {
+    const email = document.getElementById('newsletter-email')?.value;
+    if (!email || !email.includes('@')) { showToast('Please enter a valid email.', ''); return; }
+    showToast(`${email} subscribed to PermitPal updates!`, 'success');
+    document.getElementById('newsletter-email').value = '';
+}
+function copyShareLink() {
+    const link = document.getElementById('share-link');
+    link.select();
+    navigator.clipboard.writeText(link.value).then(() => showToast('Report link copied!', 'success')).catch(() => showToast('Link: ' + link.value, 'info'));
+}
+
+let selectedExpert = null;
+function selectExpert(el) { document.querySelectorAll('.expert-card').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); selectedExpert = el.querySelector('.expert-name').innerText; }
+function bookExpert() {
+    if (!selectedExpert) { showToast('Please select an expert first.', ''); return; }
+    closeModal('expert-modal');
+    showToast(`Booking confirmed with ${selectedExpert}. Calendar invite incoming.`, 'success');
+}
+
+/* ================================================================
+   SCROLL & INIT
+   ================================================================ */
+window.onscroll = function() { document.getElementById('header').classList.toggle('scrolled', window.pageYOffset > 50); };
+
+// Init
+document.getElementById('home-page').style.display = 'block';
+
+// Init the first visible jurisdiction map (Waterloo)
+setTimeout(() => initJurisdictionMap('map-waterloo'), 800);
+</script>
+</body>
+</html>
