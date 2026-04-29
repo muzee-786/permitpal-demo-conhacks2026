@@ -407,6 +407,292 @@
         @media (max-width: 1100px) { .nexus-grid { grid-template-columns: 1fr; } .nexus-sidebar { position: static; } .how-grid { grid-template-columns: 1fr 1fr; } .pricing-grid { grid-template-columns: 1fr 1fr; } .gis-page-layout { grid-template-columns: 1fr; } #gis-leaflet-map { height: 500px; } }
         @media (max-width: 768px) { .site-header { padding: 0 24px; } .nav-menu { display: none; } .config-grid { grid-template-columns: 1fr; } .nexus-header, .nexus-body { padding: 40px; } .report-title { font-size: 36px; } .footer-grid { grid-template-columns: 1fr; gap: 40px; } .how-grid { grid-template-columns: 1fr; } .pricing-grid { grid-template-columns: 1fr; } .testimonials-grid { grid-template-columns: 1fr; } .trust-bar { flex-wrap: wrap; gap: 32px; } .trust-divider { display: none; } .checklist-grid { grid-template-columns: 1fr; } .jurisdiction-panel { grid-template-columns: 1fr !important; } }
         @media print { .site-header, .hero-section, .config-grid, .site-footer, .action-btn, .how-section, .pricing-section, .testimonials-section, .trust-bar, .jurisdictions-section, .legal-disclaimer-banner { display: none !important; } body { background: white; } #report-nexus { display: block !important; padding: 0; } .nexus-grid { display: block; } .nexus-main { border: none; box-shadow: none; } .nexus-header { padding: 40px 0; } .nexus-body { padding: 40px 0; } .nexus-sidebar { display: none; } }
+
+        /* ================================================================
+           MOBILE RESPONSIVE LAYER — max-width: 900px
+           Activates only on small screens. Does NOT touch desktop styles.
+           ================================================================ */
+        @media (max-width: 900px) {
+
+            /* === GLOBAL RESETS === */
+            html { font-size: 15px; }
+            body { overflow-x: hidden; }
+            *, *::before, *::after { max-width: 100%; }
+
+            /* === LEGAL BANNER === */
+            .legal-disclaimer-banner {
+                padding: 8px 14px;
+                font-size: 10px;
+                flex-wrap: wrap;
+                gap: 6px;
+                text-align: left;
+                position: relative;
+            }
+            .legal-disclaimer-banner .dismiss-btn { margin-left: 0; }
+
+            /* === HEADER === */
+            .site-header {
+                height: 64px;
+                padding: 0 20px;
+                top: 0;
+            }
+            .site-header.scrolled { height: 56px; }
+            .brand-name { font-size: 20px; }
+            .brand-icon { width: 26px; height: 26px; }
+            .nav-menu { display: none !important; }
+            .header-cta-group { gap: 8px; }
+            .header-cta-group .action-btn {
+                padding: 8px 14px !important;
+                font-size: 12px !important;
+                width: auto !important;
+            }
+
+            /* === HERO === */
+            .hero-section {
+                padding: 100px 16px 60px;
+            }
+            .hero-badge { font-size: 10px; padding: 6px 14px; }
+            .hero-title {
+                font-size: clamp(32px, 9vw, 48px);
+                letter-spacing: -1.5px;
+                margin-bottom: 20px;
+            }
+            .hero-sub {
+                font-size: 15px;
+                margin-bottom: 36px;
+            }
+            .omni-search-container { padding: 0 4px; }
+            .omni-search-bar {
+                flex-direction: column;
+                border-radius: 20px;
+                padding: 8px;
+                gap: 0;
+            }
+            .omni-search-bar:focus-within {
+                transform: none;
+            }
+            .search-field {
+                padding: 16px 20px;
+                font-size: 16px;
+                width: 100%;
+            }
+            .run-btn {
+                width: 100%;
+                padding: 16px 20px;
+                border-radius: 14px;
+                font-size: 15px;
+                justify-content: center;
+            }
+
+            /* === TRUST BAR === */
+            .trust-bar {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 24px 16px;
+                padding: 40px 20px;
+            }
+            .trust-divider { display: none; }
+            .trust-stat .num { font-size: 32px; }
+            .trust-stat .lbl { font-size: 10px; }
+
+            /* === CONFIG GRID === */
+            .config-grid {
+                grid-template-columns: 1fr;
+                padding: 0 16px;
+                margin: 32px auto 48px;
+                gap: 16px;
+            }
+            .config-item { padding: 24px 20px; }
+            .config-item select { font-size: 16px; }
+
+            /* === HOW IT WORKS === */
+            .how-section { padding: 72px 16px; }
+            .how-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                max-width: 100%;
+            }
+            .how-card { padding: 32px 24px; }
+            .how-card::before { font-size: 80px; }
+            .how-card h3 { font-size: 20px; }
+
+            /* === SECTION TYPOGRAPHY === */
+            .section-headline { font-size: clamp(24px, 6vw, 36px); letter-spacing: -0.5px; }
+            .section-sub { font-size: 15px; margin-bottom: 48px; }
+
+            /* === JURISDICTIONS === */
+            .jurisdictions-section { padding: 72px 16px; }
+            .jurisdiction-tabs { gap: 8px; margin-bottom: 36px; }
+            .j-tab { padding: 10px 18px; font-size: 13px; }
+            .jurisdiction-panels-wrapper { min-height: unset; }
+            .jurisdiction-panel,
+            .jurisdiction-panel.active {
+                grid-template-columns: 1fr !important;
+                gap: 20px;
+            }
+            .j-info-block { padding: 24px 20px; }
+            .j-info-block h3 { font-size: 22px; }
+            .j-info-block p { font-size: 14px; }
+            .j-stat-row { font-size: 13px; }
+            .j-leaflet-map { height: 220px; }
+            .j-map-visual { min-height: unset; }
+
+            /* === TESTIMONIALS === */
+            .testimonials-section { padding: 72px 16px; }
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                max-width: 100%;
+            }
+            .testimonial-card { padding: 28px 24px; }
+            .testimonial-text { font-size: 15px; }
+
+            /* === PRICING === */
+            .pricing-section { padding: 100px 16px 72px !important; }
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                max-width: 100%;
+            }
+            .pricing-card { padding: 36px 28px; }
+            .pricing-card.featured { transform: none; }
+            .pricing-card.featured:hover { transform: translateY(-8px); }
+            .plan-price { font-size: 44px; }
+            .plan-name { font-size: 22px; }
+
+            /* === BYLAW PAGE === */
+            .bylaw-search-section {
+                padding: 100px 16px 48px;
+            }
+            .bylaw-search-bar { flex-direction: column; border-radius: 16px; overflow: hidden; }
+            .bylaw-input {
+                padding: 16px 20px;
+                font-size: 16px;
+                width: 100%;
+                border-radius: 0;
+            }
+            .bylaw-search-btn {
+                padding: 16px 20px;
+                font-size: 15px;
+                width: 100%;
+                border-radius: 0;
+            }
+            .bylaw-results { padding: 0 16px; }
+            .bylaw-card { padding: 24px 20px; }
+            .bylaw-title { font-size: 18px; }
+
+            /* === GIS PAGE === */
+            .gis-page-layout {
+                grid-template-columns: 1fr;
+                padding-top: 64px;
+            }
+            .gis-sidebar {
+                padding: 24px 20px;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                align-items: start;
+            }
+            .gis-sidebar > div:last-child { grid-column: 1 / -1; }
+            .gis-filter-option { padding: 10px 12px; font-size: 13px; }
+            #gis-leaflet-map { height: 420px; min-height: unset; }
+            .gis-ui-panel {
+                top: 12px;
+                right: 12px;
+                padding: 16px;
+                width: 160px;
+            }
+            .gis-legend-item { font-size: 11px; gap: 6px; margin-bottom: 8px; }
+
+            /* === REPORT === */
+            #report-nexus { padding: 0 16px; margin-bottom: 60px; }
+            .nexus-grid { grid-template-columns: 1fr; gap: 24px; }
+            .nexus-header { padding: 32px 24px; }
+            .report-title { font-size: 26px; letter-spacing: -0.5px; }
+            .report-meta { font-size: 11px; }
+            .nexus-body { padding: 32px 24px; }
+            .report-section { margin-bottom: 52px; }
+            .report-section-title { font-size: 22px; gap: 12px; }
+            .report-section-title span { font-size: 13px; }
+            .metric-card { padding: 24px 20px; }
+            .checklist-grid { grid-template-columns: 1fr; }
+            .check-item { padding: 16px; }
+            .doc-item { padding: 16px 18px; }
+            .roadmap-item { padding-left: 56px; margin-bottom: 36px; }
+            .roadmap-title { font-size: 17px; }
+            .roadmap-text { font-size: 14px; }
+            .nexus-sidebar { position: static; }
+            .widget-box { padding: 28px 20px; }
+            .fee-total { font-size: 22px; }
+            .action-btn { padding: 16px; font-size: 14px; }
+            .gis-map { height: 200px; }
+
+            /* === ANALYSIS LOADER === */
+            #analysis-loader { padding: 120px 16px; }
+            .loader-status-text { font-size: 20px; }
+            .loader-visual { width: 72px; height: 72px; }
+
+            /* === FOOTER === */
+            .site-footer { padding: 72px 0 40px; }
+            .footer-inner { padding: 0 20px; }
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 36px;
+                margin-bottom: 48px;
+            }
+            .footer-brand h2 { font-size: 26px; }
+            .footer-brand p { max-width: 100%; font-size: 14px; }
+            .newsletter-form { flex-direction: column; gap: 10px; }
+            .newsletter-input { width: 100%; border-radius: var(--radius-md); }
+            .newsletter-btn { width: 100%; padding: 14px; border-radius: var(--radius-md); }
+            .footer-bottom { flex-direction: column; gap: 20px; text-align: center; }
+            .footer-legal { font-size: 11px; }
+
+            /* === MODALS === */
+            .modal-surface {
+                padding: 48px 24px 36px;
+                max-width: 100% !important;
+                margin: 0 8px;
+                border-radius: 24px;
+            }
+            .modal-title { font-size: 26px; }
+            .modal-copy { font-size: 15px; }
+            .modal-icon { font-size: 56px; margin-bottom: 20px; }
+            .expert-grid { grid-template-columns: 1fr; gap: 12px; }
+            .expert-card { padding: 16px; }
+
+            /* === TOAST === */
+            #toast-container {
+                bottom: 16px;
+                right: 16px;
+                left: 16px;
+            }
+            .toast { max-width: 100%; font-size: 13px; }
+
+            /* === PREVENT HORIZONTAL SCROLL === */
+            .hero-section,
+            .trust-bar,
+            .config-grid,
+            .how-section,
+            .jurisdictions-section,
+            .testimonials-section,
+            .pricing-section,
+            #report-nexus,
+            .bylaw-search-section,
+            .bylaw-results,
+            .site-footer { overflow-x: hidden; }
+        }
+
+        /* Extra-small phones */
+        @media (max-width: 420px) {
+            .hero-title { font-size: 28px; }
+            .trust-bar { grid-template-columns: 1fr 1fr; gap: 20px 12px; padding: 32px 16px; }
+            .gis-sidebar { grid-template-columns: 1fr; }
+            .run-btn { font-size: 14px; }
+            .section-headline { font-size: 24px; }
+            .report-title { font-size: 22px; }
+            .j-tab { padding: 8px 14px; font-size: 12px; }
+        }
     </style>
 </head>
 <body>
